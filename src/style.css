@@ -21,6 +21,8 @@ button{
 .entry{
  display: flex;
  flex-direction: column;
+ align-items: center;
+ justify-content: center;
  gap: 1rem;
 }
 .vote-message{
@@ -34,6 +36,7 @@ button{
   font-size: x-large;
   border: 2px solid;
   background-color: white;
+  width: 100%;
 }
 
 #btnBeginVote:hover{

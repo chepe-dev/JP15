@@ -14,11 +14,11 @@
 <template>
   <div v-if="!mostrarTabla" class="entry">
     <div class="vote-message">
-      <h1>Vota por</h1>
+      <h1>VOTA POR JUNTOS POR EL PERÚ</h1>
       <img src="./assets/Logo_juntos_por_el_Peru.svg" width="100px" height="100px"/>
-      <h1>#15</h1>
     </div>
     <button id="btnBeginVote" @click="iniciarVoto">Iniciar voto</button>
+    <h2>Simulación para el distrito electoral de Áncash</h2>
   </div>
 
   <div v-else id="vote-page">

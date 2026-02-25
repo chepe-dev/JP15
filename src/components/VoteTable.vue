@@ -13,7 +13,7 @@ import { ref, computed } from 'vue';
     },
     {
         title: 'SENADORES',
-        subtitle: 'A NIVEL NACIONAL (DISTRITO ÚNICO)',
+        subtitle: 'A NIVEL NACIONAL',
         requiredBoxes: 3,
         backgroundColor: '#FFE1EB',
         candidatoPrincipal: 'CANDIDATO JP #15',
@@ -21,8 +21,8 @@ import { ref, computed } from 'vue';
         candidatoExtra2: 'CANDIDATO D'
     },
     {
-        title: 'DIPUTADOS',
-        subtitle: 'DISTRITO ELECTORAL',
+        title: 'SENADORES',
+        subtitle: 'A NIVEL REGIONAL (ANCASH)',
         requiredBoxes: 2,
         backgroundColor: '#F5E6D7',
         candidatoPrincipal: 'CANDIDATO JP #15',
@@ -30,8 +30,8 @@ import { ref, computed } from 'vue';
         candidatoExtra2: 'CANDIDATO F'
     },
     {
-        title: 'GOBERNADOR REGIONAL',
-        subtitle: 'A NIVEL REGIONAL',
+        title: 'DIPUTADOS',
+        subtitle: 'A NIVEL REGIONAL (ANCASH)',
         requiredBoxes: 3,
         backgroundColor: '#E1F5E1',
         candidatoPrincipal: 'CANDIDATO JP #15',
@@ -39,8 +39,8 @@ import { ref, computed } from 'vue';
         candidatoExtra2: 'CANDIDATO H'
     },
     {
-        title: 'ALCALDE PROVINCIAL',
-        subtitle: 'A NIVEL PROVINCIAL',
+        title: 'PARLAMENTO ANDINO',
+        subtitle: '',
         requiredBoxes: 3,
         backgroundColor: '#E1F5E1',
         candidatoPrincipal: 'CANDIDATO JP #15',
@@ -144,24 +144,24 @@ import { ref, computed } from 'vue';
                 </td>
             </tr>
 
-            <tr class="main-row">
+            <tr id="main-row">
                 <td colspan="6" :style="{ backgroundColor: currentMode.backgroundColor }">
                     {{ currentMode.candidatoPrincipal }}
                 </td>
-                <td @click="alternateVote(1)" class="clickable-cell" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
-                    <div v-if="[1, 3, 4].includes(currentStep)" class="vote-box" 
+                <td @click="alternateVote(1)" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
+                    <div v-if="[1, 3, 4].includes(currentStep)" :class="`vote-box ${currentVotes.box1 ? '' : 'pulsing-box'}`" 
                         style="background-image: url('/Logo_juntos_por_el_Peru.svg');">
                         <span v-if="currentVotes.box1" class="x-mark">X</span>
                     </div>
                 </td>
-                <td @click="alternateVote(2)" class="clickable-cell" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
-                    <div class="vote-box" 
+                <td @click="alternateVote(2)" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
+                    <div :class="`vote-box ${currentVotes.box2 ? '' : 'pulsing-box'}`" 
                         style="background-image: url('/Logo_juntos_por_el_Peru.svg');">
                         <span v-if="currentVotes.box2" class="x-mark">X</span>
                     </div>
                 </td>
-                <td @click="alternateVote(3)" class="clickable-cell" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
-                    <div class="vote-box"
+                <td @click="alternateVote(3)" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
+                    <div :class="`vote-box ${currentVotes.box3 ? '' : 'pulsing-box'}`"
                         style="background-image: url('/Logo_juntos_por_el_Peru.svg');">
                         <span v-if="currentVotes.box3" class="x-mark">X</span>
                     </div>
@@ -170,22 +170,32 @@ import { ref, computed } from 'vue';
 
             <tr>
                 <td colspan="6" :style="{ backgroundColor: currentMode.backgroundColor }">CANDIDATO Y</td>
-                <td class="clickable-cell" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
+                <td colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
                     <div v-if="[1, 3, 4].includes(currentStep)" class="vote-box">
 
                     </div>
                 </td>
-                <td class="clickable-cell" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
+                <td colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
                     <div class="vote-box" >
                     </div>
                 </td>
-                <td class="clickable-cell" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
+                <td colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
                     <div class="vote-box">
                     </div>
                 </td>
             </tr>
         </tbody>
     </table>
+
+    <div id="message-container">
+        <h3>Toma en cuenta:</h3>
+        <p>
+            1. Marcar como mínimo el logo del partido (Símbolo).<br>
+            2. Se debe marcar el símbolo antes de ingresar el voto preferencial.<br>
+            3. El voto preferencial es opcional.<br>
+            4. El voto preferencial no puede repetirse.
+        </p>
+    </div>
 
     <div class="button-container">
         <button id="btnBack" class="black-button" @click="goBack" :disabled="currentStep === 0">ATRÁS</button>
@@ -265,6 +275,17 @@ import { ref, computed } from 'vue';
         justify-content: center;
         align-items: center;
         position: relative;
+        cursor:not-allowed;
+    }
+
+    .pulsing-box{
+        animation: boxPulse 1s infinite;
+        cursor: pointer;
+    }
+
+    .pulsing-box:hover{
+        animation: none;
+        background-color: lightpink !important;
     }
 
     #vote-table td:has(.vote-box) {
@@ -280,9 +301,8 @@ import { ref, computed } from 'vue';
         position: absolute; 
     }
 
-    .clickable-cell:hover .vote-box {
+    .vote-box:hover {
         background-color: #f0f0f0;
-        cursor: pointer;
     }
 
     .card{
@@ -292,5 +312,59 @@ import { ref, computed } from 'vue';
         border: 1px solid black;
         margin-bottom: 3rem;
         padding: 1rem;
+    }
+
+    @keyframes boxPulse {
+        0% { filter: brightness(1); }
+        50% { filter: brightness(0.8); } /* Oscurece el fondo ligerísimamente */
+        100% { filter: brightness(1); }
+    }
+
+    #main-row td:first-child,
+    #main-row td:last-child {
+        position: relative;
+    }
+
+    #main-row td:first-child::before {
+        content: "▶";
+        position: absolute;
+        left: -30px;
+        top: 50%; /* Lo centra verticalmente */
+        color: lightcoral;
+        font-size: 1.5rem;
+        animation: sideArrows 0.8s infinite alternate;
+    }
+
+    #main-row td:last-child::after {
+        content: "◀";
+        position: absolute;
+        right: -30px;
+        top: 50%;
+        color: lightcoral;
+        font-size: 1.5rem;
+        animation: sideArrows 0.8s infinite alternate;
+    }
+
+    /* 4. La animación que las hace aparecer y desaparecer */
+    @keyframes sideArrows {
+        0% { 
+            opacity: 0; /* Totalmente invisibles */
+            transform: translateY(-50%) scale(0.8); /* Ligeramente más pequeñas */
+        }
+        100% { 
+            opacity: 1; /* Totalmente visibles */
+            transform: translateY(-50%) scale(1.2); /* Ligeramente más grandes */
+        }
+    }
+
+    #message-container{
+        background-color: darkgoldenrod;
+        color: white;
+        border: 2px solid goldenrod;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 1rem;
+        padding: 1.5rem;
     }
 </style>
