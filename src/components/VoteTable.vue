@@ -1,51 +1,57 @@
 <script setup>
 import { ref, computed } from 'vue';
+import PreferentialModal from './PreferentialModal.vue';
 
     const tableModes = [
     {
         title: 'PRESIDENTE Y VICEPRESIDENTES',
         subtitle: '',
-        requiredBoxes: 2,
+        requiredBox: 1,
         backgroundColor: '#DCF0FF',
-        candidatoPrincipal: 'CANDIDATO JP #15',
-        candidatoExtra1: 'CANDIDATO A',
-        candidatoExtra2: 'CANDIDATO B'
     },
     {
         title: 'SENADORES',
         subtitle: 'A NIVEL NACIONAL',
-        requiredBoxes: 3,
+        requiredBox: 1,
         backgroundColor: '#FFE1EB',
-        candidatoPrincipal: 'CANDIDATO JP #15',
-        candidatoExtra1: 'CANDIDATO C',
-        candidatoExtra2: 'CANDIDATO D'
+        preferentialVotes: [{ name: 'José Mercedes Castillo Terrones', number: 1, photo: '/SENADORES NACIONALES/1-Jose.jpg' },
+                            { name: 'Bernardo Jaime Quito Sarmiento', number: 7, photo: '/SENADORES NACIONALES/7-Bernardo.jpeg' },
+                            { name: 'Margot Palacios Huamán', number: 8, photo: '/SENADORES NACIONALES/8-Margot.jpg' }]
     },
     {
         title: 'SENADORES',
         subtitle: 'A NIVEL REGIONAL (ANCASH)',
-        requiredBoxes: 2,
+        requiredBox: 1,
         backgroundColor: '#F5E6D7',
-        candidatoPrincipal: 'CANDIDATO JP #15',
-        candidatoExtra1: 'CANDIDATO E',
-        candidatoExtra2: 'CANDIDATO F'
+        preferentialVotes: [{ name: 'Elías Marcial Varas Meléndez', number: 1, photo: '/SENADORES REGIONALES/1-Elias.png' },
+                            { name: 'Domitila Gina Silva Castillo', number: 2, photo: '/SENADORES REGIONALES/2-Domitila.jpeg' }]
     },
     {
         title: 'DIPUTADOS',
         subtitle: 'A NIVEL REGIONAL (ANCASH)',
-        requiredBoxes: 3,
+        requiredBox: 1,
         backgroundColor: '#E1F5E1',
-        candidatoPrincipal: 'CANDIDATO JP #15',
-        candidatoExtra1: 'CANDIDATO G',
-        candidatoExtra2: 'CANDIDATO H'
+        preferentialVotes: [{ name: 'Daniel Jefferson Varas Seguín', number: 1, photo: '/DIPUTADOS/1-Daniel.jpg' },
+                            { name: 'José Antonio Monzon Mendoza', number: 5, photo: '/DIPUTADOS/5-Jose.jpeg' }]
     },
     {
         title: 'PARLAMENTO ANDINO',
         subtitle: '',
-        requiredBoxes: 3,
+        requiredBox: 1,
         backgroundColor: '#E1F5E1',
-        candidatoPrincipal: 'CANDIDATO JP #15',
-        candidatoExtra1: 'CANDIDATO I',
-        candidatoExtra2: 'CANDIDATO J'
+        preferentialVotes: [{ name: 'Paúl Pércy Fernández Bravo', number: 1, photo: '/PARLAMENTO ANDINO/1-Paul.jpg' },
+                            { name: 'Rosario Del Carmen Mori Isuisa', number: 2, photo: '/PARLAMENTO ANDINO/2-Rosario.jpg' },
+                            { name: 'Jorge Eusebio Manco Zaconetti', number: 3, photo: '/PARLAMENTO ANDINO/3-Jorge.jpg' },
+                            { name: 'Angélica Rosario Espinoza Morales', number: 4, photo: '/PARLAMENTO ANDINO/4-Angelica.jpg' },
+                            { name: 'Richard Michael Hidalgo Moreno', number: 5, photo: '/PARLAMENTO ANDINO/5-Richard.jpg' },
+                            { name: 'Williams Mijaíl Sosa Gonzalo', number: 7, photo: '/PARLAMENTO ANDINO/7-Williams.jpg' },
+                            { name: 'Juán Rojas Vargas', number: 9, photo: '/PARLAMENTO ANDINO/9-Juan.jpg' },
+                            { name: 'Ana Ysabel Narvaez Llancachahua', number: 10, photo: '/PARLAMENTO ANDINO/10-Ana.jpg' },
+                            { name: 'Gustavo Puma Cáceres', number: 11, photo: '/PARLAMENTO ANDINO/11-Gustavo.jpg' },
+                            { name: 'Fány Idelba Chahuares Arpasi', number: 12, photo: '/PARLAMENTO ANDINO/12-Fany.jpg' },
+                            { name: 'Andersón Duberli', number: 13, photo: '/PARLAMENTO ANDINO/13-Anderson.jpg' },
+                            { name: 'Jorge Luis Cardenas Soto', number: 15, photo: '/PARLAMENTO ANDINO/15-Jorge.jpg' },
+                            { name: 'Silvia Yanet Piñas Colonio', number: 16, photo: '/PARLAMENTO ANDINO/16-Silvia.jpg' }]
     }
     ];
     const currentStep = ref(0);
@@ -53,18 +59,31 @@ import { ref, computed } from 'vue';
     // Computed property para acceder fácilmente a los datos del modo actual
     const currentMode = computed(() => tableModes[currentStep.value]);
 
-    // 3. Guardamos los votos de cada etapa en un arreglo
+    // Funcionalidad del modal
+    const showModal = ref(false);
+    const activePreferentialBox = ref(null);
+    const openModal = (boxNumber) => {
+        activePreferentialBox.value = boxNumber;
+        showModal.value = true;
+    };
+
+    const savePreferentialVote = (candidateNumber) => {
+        currentVotes.value[`preferentialVote${activePreferentialBox.value}`] = candidateNumber;
+        showModal.value = false;
+    };
+
+    // Guardamos los votos de cada etapa en un arreglo
     const votes = ref([
-    { box1: false, box2: false, box3: false }, // Votos paso 0
-    { box1: false, box2: false, box3: false }, // Votos paso 1
-    { box1: false, box2: false, box3: false }, // Votos paso 2
-    { box1: false, box2: false, box3: false }, // Votos paso 3
-    { box1: false, box2: false, box3: false }  // Votos paso 4
+    { box1: false, box2: false}, // Votos paso 0
+    { box1: false, preferentialVote1: null, preferentialVote2: null}, // Votos paso 1
+    { box1: false, preferentialVote1: null}, // Votos paso 2
+    { box1: false, preferentialVote1: null, preferentialVote2: null}, // Votos paso 3
+    { box1: false, preferentialVote1: null, preferentialVote2: null}  // Votos paso 4
     ]);
 
     const currentVotes = computed(() => votes.value[currentStep.value]);
 
-    // 4. Funciones de los botones
+    // Funciones de los botones
     const alternateVote = (boxNumber) => {
         currentVotes.value[`box${boxNumber}`] = !currentVotes.value[`box${boxNumber}`];
     };
@@ -72,11 +91,10 @@ import { ref, computed } from 'vue';
     const goForward = () => {
         // Validamos que se hayan marcado las cajas requeridas
         const v = currentVotes.value;
-        const required = currentMode.value.requiredBoxes;
+        const required = currentMode.value.requiredBox;
         
         let isValid = false;
-        if (required === 3) isValid = v.box1 && v.box2 && v.box3;
-        if (required === 2) isValid = v.box2 && v.box3;
+        if (required === 1) isValid = v.box1;
 
         if (!isValid) {
             alert(`Por favor, marca las ${required} casillas correspondientes a Juntos por el Perú (#15) para practicar tu voto.`);
@@ -130,8 +148,7 @@ import { ref, computed } from 'vue';
             <tr>
                 <td colspan="6" :style="{ backgroundColor: currentMode.backgroundColor }">CANDIDATO X</td>
                 <td class="clickable-cell" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }"> 
-                    <div v-if="[1, 3, 4].includes(currentStep)" class="vote-box">
-
+                    <div v-if="currentStep !== 0" class="vote-box">
                     </div>
                 </td>
                 <td class="clickable-cell" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
@@ -139,31 +156,38 @@ import { ref, computed } from 'vue';
                     </div>
                 </td>
                 <td class="clickable-cell" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
-                    <div class="vote-box">
+                    <div v-if="currentStep !== 2" class="vote-box">
                     </div>
                 </td>
             </tr>
 
             <tr id="main-row">
-                <td colspan="6" :style="{ backgroundColor: currentMode.backgroundColor }">
-                    {{ currentMode.candidatoPrincipal }}
+                <td :colspan="currentStep === 0 ? 8 : 6" :style="{ backgroundColor: currentMode.backgroundColor }">
+                    PARTIDO JUNTOS POR EL PERÚ
                 </td>
                 <td @click="alternateVote(1)" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
-                    <div v-if="[1, 3, 4].includes(currentStep)" :class="`vote-box ${currentVotes.box1 ? '' : 'pulsing-box'}`" 
+                    <div :class="`vote-box ${currentVotes.box1 ? '' : 'beat-box'}`" 
                         style="background-image: url('/Logo_juntos_por_el_Peru.svg');">
                         <span v-if="currentVotes.box1" class="x-mark">X</span>
                     </div>
                 </td>
-                <td @click="alternateVote(2)" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
+
+                <td v-if="currentStep === 0" @click="alternateVote(2)" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
                     <div :class="`vote-box ${currentVotes.box2 ? '' : 'pulsing-box'}`" 
-                        style="background-image: url('/Logo_juntos_por_el_Peru.svg');">
+                        style="background-image: url('/PRESIDENTE/Roberto.png');">
                         <span v-if="currentVotes.box2" class="x-mark">X</span>
                     </div>
                 </td>
-                <td @click="alternateVote(3)" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
-                    <div :class="`vote-box ${currentVotes.box3 ? '' : 'pulsing-box'}`"
-                        style="background-image: url('/Logo_juntos_por_el_Peru.svg');">
-                        <span v-if="currentVotes.box3" class="x-mark">X</span>
+
+                <td v-if="currentStep !== 0" @click="openModal(1)" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
+                    <div :class="`vote-box ${currentVotes.preferentialVote1 ? '' : 'pulsing-box'}`">
+                        <span v-if="currentVotes.preferentialVote1" class="x-mark">{{ currentVotes.preferentialVote1 }}</span>
+                    </div>
+                </td>
+
+                <td v-if="currentStep !== 0" @click="openModal(2)" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
+                    <div v-if="[1, 3, 4].includes(currentStep)" :class="`vote-box ${currentVotes.preferentialVote2 ? '' : 'pulsing-box'}`">
+                        <span v-if="currentVotes.preferentialVote2" class="x-mark">{{ currentVotes.preferentialVote2 }}</span>
                     </div>
                 </td>
             </tr>
@@ -171,7 +195,7 @@ import { ref, computed } from 'vue';
             <tr>
                 <td colspan="6" :style="{ backgroundColor: currentMode.backgroundColor }">CANDIDATO Y</td>
                 <td colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
-                    <div v-if="[1, 3, 4].includes(currentStep)" class="vote-box">
+                    <div v-if="currentStep !== 0" class="vote-box">
 
                     </div>
                 </td>
@@ -180,7 +204,7 @@ import { ref, computed } from 'vue';
                     </div>
                 </td>
                 <td colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
-                    <div class="vote-box">
+                    <div v-if="currentStep !== 2" class="vote-box">
                     </div>
                 </td>
             </tr>
@@ -203,6 +227,14 @@ import { ref, computed } from 'vue';
         {{ currentStep === tableModes.length - 1 ? 'FINALIZAR' : 'SIGUIENTE' }}
         </button>
     </div>
+
+    <PreferentialModal 
+        v-if="showModal" 
+        :candidates="currentMode.preferentialVotes"
+        @selectCandidate="savePreferentialVote" 
+        @cancel="showModal = false"
+    />
+
 </template>
 
 <style scoped>
@@ -278,16 +310,6 @@ import { ref, computed } from 'vue';
         cursor:not-allowed;
     }
 
-    .pulsing-box{
-        animation: boxPulse 1s infinite;
-        cursor: pointer;
-    }
-
-    .pulsing-box:hover{
-        animation: none;
-        background-color: lightpink !important;
-    }
-
     #vote-table td:has(.vote-box) {
         padding: 0;
     }
@@ -318,6 +340,37 @@ import { ref, computed } from 'vue';
         0% { filter: brightness(1); }
         50% { filter: brightness(0.8); } /* Oscurece el fondo ligerísimamente */
         100% { filter: brightness(1); }
+    }
+
+    .pulsing-box{
+        animation: boxPulse 1s infinite;
+        cursor: pointer;
+    }
+
+    .pulsing-box:hover{
+        animation: none;
+        background-color: lightpink !important;
+    }
+
+    .beat-box {
+        animation: heartbeatBox 1.5s infinite;
+        cursor: pointer;
+    }
+
+    @keyframes heartbeatBox {
+        0% { 
+            transform: scale(1); 
+            box-shadow: 0 0 0 rgba(229, 28, 36, 0); 
+        }
+        50% { 
+            transform: scale(1.08); /* Crece un 8% */
+            box-shadow: 0 0 15px rgba(229, 28, 36, 0.6); /* Sombra roja externa */
+            border-color: #E51C24;
+        }
+        100% { 
+            transform: scale(1); 
+            box-shadow: 0 0 0 rgba(229, 28, 36, 0); 
+        }
     }
 
     #main-row td:first-child,
