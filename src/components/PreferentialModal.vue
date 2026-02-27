@@ -20,6 +20,16 @@ const selectNumber = (number) => {
       <p>Marca el número de tu preferencia</p>
       
       <div class="grid-candidates">
+        <button
+          class="candidate-card"
+          @click="selectNumber(null)">
+          <span class="candidate-photo x-mark">?</span>
+          
+          <div class="candidate-info">
+            <span class="candidate-name">Voto en Blanco</span>
+            <span class="candidate-number"># 0</span>
+          </div>
+        </button>
         <button 
           v-for="candidate in candidates" 
           :key="candidate.number"
@@ -45,6 +55,14 @@ const selectNumber = (number) => {
 </template>
 
 <style scoped>
+.x-mark {
+  font-size: 3rem;
+  font-weight: bold;
+  color: #000;
+  font-family: Arial, sans-serif;
+}
+
+
 /* El fondo oscuro que opaca la tabla */
 .modal-overlay {
   position: fixed;

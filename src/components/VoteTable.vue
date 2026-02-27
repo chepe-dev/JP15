@@ -63,11 +63,34 @@ import PreferentialModal from './PreferentialModal.vue';
     const showModal = ref(false);
     const activePreferentialBox = ref(null);
     const openModal = (boxNumber) => {
+        if (!currentVotes.value.box1) {
+            alert('Por favor, marque primero el símbolo del partido antes de ingresar su voto preferencial.');
+            return;
+        }
+
         activePreferentialBox.value = boxNumber;
         showModal.value = true;
     };
 
     const savePreferentialVote = (candidateNumber) => {
+        // Permitir guardar si el voto es NULO
+        if (candidateNumber === null) {
+            currentVotes.value[`preferentialVote${activePreferentialBox.value}`] = null;
+            showModal.value = false;
+            return;
+        }
+
+        const v = currentVotes.value;
+        const otherBoxNumber = activePreferentialBox.value === 1 ? 2 : 1;
+        const otherBoxKey = `preferentialVote${otherBoxNumber}`;
+
+        // Validación: Evitar que el voto preferencial se repita
+        // Verificamos si la otra caja existe en este modo y si tiene el mismo número
+        if (otherBoxKey in v && v[otherBoxKey] === candidateNumber) {
+            alert(`El candidato #${candidateNumber} ya ha sido seleccionado en la otra casilla. Por favor, elija un candidato diferente o deje la casilla en blanco.`);
+            return; // Detenemos la función aquí, el modal no se cierra
+        }
+
         currentVotes.value[`preferentialVote${activePreferentialBox.value}`] = candidateNumber;
         showModal.value = false;
     };
