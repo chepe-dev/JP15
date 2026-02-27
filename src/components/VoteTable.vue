@@ -6,13 +6,11 @@ import PreferentialModal from './PreferentialModal.vue';
     {
         title: 'PRESIDENTE Y VICEPRESIDENTES',
         subtitle: '',
-        requiredBox: 1,
         backgroundColor: '#DCF0FF',
     },
     {
         title: 'SENADORES',
         subtitle: 'A NIVEL NACIONAL',
-        requiredBox: 1,
         backgroundColor: '#FFE1EB',
         preferentialVotes: [{ name: 'José Mercedes Castillo Terrones', number: 1, photo: '/SENADORES NACIONALES/1-Jose.jpg' },
                             { name: 'Bernardo Jaime Quito Sarmiento', number: 7, photo: '/SENADORES NACIONALES/7-Bernardo.jpeg' },
@@ -21,7 +19,6 @@ import PreferentialModal from './PreferentialModal.vue';
     {
         title: 'SENADORES',
         subtitle: 'A NIVEL REGIONAL (ANCASH)',
-        requiredBox: 1,
         backgroundColor: '#F5E6D7',
         preferentialVotes: [{ name: 'Elías Marcial Varas Meléndez', number: 1, photo: '/SENADORES REGIONALES/1-Elias.png' },
                             { name: 'Domitila Gina Silva Castillo', number: 2, photo: '/SENADORES REGIONALES/2-Domitila.jpeg' }]
@@ -29,7 +26,6 @@ import PreferentialModal from './PreferentialModal.vue';
     {
         title: 'DIPUTADOS',
         subtitle: 'A NIVEL REGIONAL (ANCASH)',
-        requiredBox: 1,
         backgroundColor: '#E1F5E1',
         preferentialVotes: [{ name: 'Daniel Jefferson Varas Seguín', number: 1, photo: '/DIPUTADOS/1-Daniel.jpg' },
                             { name: 'José Antonio Monzon Mendoza', number: 5, photo: '/DIPUTADOS/5-Jose.jpeg' }]
@@ -37,8 +33,7 @@ import PreferentialModal from './PreferentialModal.vue';
     {
         title: 'PARLAMENTO ANDINO',
         subtitle: '',
-        requiredBox: 1,
-        backgroundColor: '#E1F5E1',
+        backgroundColor: '#FFF9C4',
         preferentialVotes: [{ name: 'Paúl Pércy Fernández Bravo', number: 1, photo: '/PARLAMENTO ANDINO/1-Paul.jpg' },
                             { name: 'Rosario Del Carmen Mori Isuisa', number: 2, photo: '/PARLAMENTO ANDINO/2-Rosario.jpg' },
                             { name: 'Jorge Eusebio Manco Zaconetti', number: 3, photo: '/PARLAMENTO ANDINO/3-Jorge.jpg' },
@@ -111,15 +106,14 @@ import PreferentialModal from './PreferentialModal.vue';
         currentVotes.value[`box${boxNumber}`] = !currentVotes.value[`box${boxNumber}`];
     };
 
+    // Funcionalidad para mostrar resultado del voto
+    const showVoteResult = ref(false);
+
     const goForward = () => {
         // Validamos que se hayan marcado las cajas requeridas
         const v = currentVotes.value;
-        const required = currentMode.value.requiredBox;
-        
-        let isValid = false;
-        if (required === 1) isValid = v.box1;
 
-        if (!isValid) {
+        if (!v.box1) {
             alert(`Por favor, marca las ${required} casillas correspondientes a Juntos por el Perú (#15) para practicar tu voto.`);
             return;
         }
@@ -129,22 +123,26 @@ import PreferentialModal from './PreferentialModal.vue';
             currentStep.value++;
         } else {
             alert('¡Felicidades! Has completado el tutorial de votación.');
-            // Aquí podrías reiniciar el tutorial: currentStep.value = 0;
+            showVoteResult.value = true;
         }
     };
 
     const goBack = () => {
+        if(showVoteResult.value) {
+            showVoteResult.value = false;
+            return;
+        }
         if (currentStep.value > 0) currentStep.value--;
     };
 </script>
 
 <template>
     <div class="card vote-message">
-      <h1>Practica tu voto!</h1>
+      <h1>{{showVoteResult.value ? "Resultado del voto!" : "Practica tu voto!"}}</h1>
       <img src="../assets/Logo_juntos_por_el_Peru.svg" width="100px" height="100px"/>
     </div>
 
-    <table id="vote-table">
+    <table v-if="!showVoteResult" id="vote-table">
         <colgroup>
             <col style="width: 8.33%;" v-for="i in 12" :key="i">
         </colgroup>
@@ -234,7 +232,7 @@ import PreferentialModal from './PreferentialModal.vue';
         </tbody>
     </table>
 
-    <div id="message-container">
+    <div v-if="!showVoteResult" id="message-container">
         <h3>Toma en cuenta:</h3>
         <p>
             1. Marcar como mínimo el logo del partido (Símbolo).<br>
@@ -242,6 +240,22 @@ import PreferentialModal from './PreferentialModal.vue';
             3. El voto preferencial es opcional.<br>
             4. El voto preferencial no puede repetirse.
         </p>
+    </div>
+
+    <div v-if="showVoteResult" >
+        <table id="result-table">
+            <thead>
+                <tr>
+                    <th v-for="m in tableModes">{{ `${m.title}${m.subtitle ? ` - ${m.subtitle}` : ''}` }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 
     <div class="button-container">
@@ -295,6 +309,20 @@ import PreferentialModal from './PreferentialModal.vue';
     #vote-table td{
         padding: 1rem;
         border-bottom: 0.75rem solid white;
+    }
+
+    #result-table{
+        border-collapse: separate;
+        border: none;
+        table-layout: fixed;
+        border-spacing: 0.5rem;
+        font-weight: bold;
+    }
+
+    #result-table th{
+        font-size:small;
+        padding: 1rem;
+        border: 1px solid black;
     }
 
     #information-row th:first-child{
