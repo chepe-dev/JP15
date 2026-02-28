@@ -1,6 +1,38 @@
 <script setup>
 import { ref, computed } from 'vue';
 import PreferentialModal from './PreferentialModal.vue';
+import html2canvas from 'html2canvas';
+
+const captureArea = ref(null);
+
+// 3. La función que genera y descarga la imagen
+const downloadResults = async () => {
+    if (!captureArea.value) return;
+
+    try {
+        // html2canvas toma el elemento HTML y lo dibuja
+        const canvas = await html2canvas(captureArea.value, {
+            scale: 2, // Aumenta la resolución para que no se vea borroso al compartir
+            backgroundColor: '#ffffff', // Fuerza fondo blanco por si acaso
+            useCORS: true // Súper importante para que renderice imágenes/logos externos sin error
+        });
+
+        // Convertimos el canvas a un formato de imagen PNG (Data URL)
+        const imageURL = canvas.toDataURL("image/png");
+
+        // Truco de HTML5 para forzar la descarga: creamos un enlace invisible y le hacemos clic
+        const link = document.createElement('a');
+        link.href = imageURL;
+        link.download = 'Mis_Resultados_JP.png'; // El nombre del archivo que se descargará
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+    } catch (error) {
+        console.error("Error al generar la imagen:", error);
+        alert("Hubo un error al generar la imagen de tus resultados.");
+    }
+};
 
     const tableModes = [
     {
@@ -137,128 +169,163 @@ import PreferentialModal from './PreferentialModal.vue';
 </script>
 
 <template>
-
-    <table v-if="!showVoteResult" id="vote-table">
-        <colgroup>
-            <col style="width: 8.33%;" v-for="i in 12" :key="i">
-        </colgroup>
-        <thead>
-            <tr id="information-row">
-                <th colspan="3"><img src="../assets/Escudo_nacional_del_Perú.svg" alt="Escudo Perú" width="80px" height="80px"></th>
-                <th colspan="6">
-                    <h2>{{currentMode.title}}</h2>
-                    <h3>{{ currentMode.subtitle }}</h3>
-                </th>
-                <th colspan="3"><img src="../assets/ONPE.png" alt="Logo ONPE" width="80px" height="60px"></th>
-            </tr>
-            <tr id="instruction-row">
-                <th :colspan="currentStep === 0 ? 12:8">MARQUE CON UNA CRUZ <b>+</b> O UN ASPA <b>x</b> DENTRO DEL RECUADRO DEL SÍMBOLO Y/O FOTOGRAFÍA DE SU PREFERENCIA</th>
-                <th v-if="currentStep !== 0" colspan="4">
-                    VOTO PREFERENCIAL
-                    <h5>SI DESEA COLOQUE DENTRO DEL RECUADRO EL NÚMERO DEL CANDIDATO DE SU PREFERENCIA</h5>
-                </th>
-            </tr>
-        </thead>
-
-        <tbody>
-
-            <tr>
-                <td colspan="6" :style="{ backgroundColor: currentMode.backgroundColor }">CANDIDATO X</td>
-                <td class="clickable-cell" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }"> 
-                    <div v-if="currentStep !== 0" class="vote-box">
-                    </div>
-                </td>
-                <td class="clickable-cell" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
-                    <div class="vote-box" >
-                    </div>
-                </td>
-                <td class="clickable-cell" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
-                    <div v-if="currentStep !== 2" class="vote-box">
-                    </div>
-                </td>
-            </tr>
-
-            <tr id="main-row">
-                <td :colspan="currentStep === 0 ? 8 : 6" :style="{ backgroundColor: currentMode.backgroundColor }">
-                    PARTIDO JUNTOS POR EL PERÚ
-                </td>
-                <td @click="alternateVote(1)" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
-                    <div :class="`vote-box ${currentVotes.box1 ? '' : 'beat-box'}`" 
-                        style="background-image: url('/Logo_juntos_por_el_Peru.svg');">
-                        <span v-if="currentVotes.box1" class="x-mark">X</span>
-                    </div>
-                </td>
-
-                <td v-if="currentStep === 0" @click="alternateVote(2)" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
-                    <div :class="`vote-box ${currentVotes.box2 ? '' : 'pulsing-box'}`" 
-                        style="background-image: url('/PRESIDENTE/Roberto.png');">
-                        <span v-if="currentVotes.box2" class="x-mark">X</span>
-                    </div>
-                </td>
-
-                <td v-if="currentStep !== 0" @click="openModal(1)" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
-                    <div :class="`vote-box ${currentVotes.preferentialVote1 ? '' : 'pulsing-box'}`">
-                        <span v-if="currentVotes.preferentialVote1" class="x-mark">{{ currentVotes.preferentialVote1 }}</span>
-                    </div>
-                </td>
-
-                <td v-if="currentStep !== 0" @click="openModal(2)" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
-                    <div v-if="[1, 3, 4].includes(currentStep)" :class="`vote-box ${currentVotes.preferentialVote2 ? '' : 'pulsing-box'}`">
-                        <span v-if="currentVotes.preferentialVote2" class="x-mark">{{ currentVotes.preferentialVote2 }}</span>
-                    </div>
-                </td>
-            </tr>
-
-            <tr>
-                <td colspan="6" :style="{ backgroundColor: currentMode.backgroundColor }">CANDIDATO Y</td>
-                <td colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
-                    <div v-if="currentStep !== 0" class="vote-box">
-
-                    </div>
-                </td>
-                <td colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
-                    <div class="vote-box" >
-                    </div>
-                </td>
-                <td colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
-                    <div v-if="currentStep !== 2" class="vote-box">
-                    </div>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-
-    <div v-if="!showVoteResult" id="message-container">
-        <h3>Toma en cuenta:</h3>
-        <p>
-            1. Marcar como mínimo el logo del partido (Símbolo).<br>
-            2. Se debe marcar el símbolo antes de ingresar el voto preferencial.<br>
-            3. El voto preferencial es opcional.<br>
-            4. El voto preferencial no puede repetirse.
-        </p>
-    </div>
-
-    <div v-if="showVoteResult" >
-        <table id="result-table">
+    <div class="vote-component-wrapper">
+        
+        <table v-if="!showVoteResult" id="vote-table">
+            <colgroup>
+                <col style="width: 8.33%;" v-for="i in 12" :key="i">
+            </colgroup>
             <thead>
-                <tr>
-                    <th v-for="m in tableModes">{{ `${m.title}${m.subtitle ? ` - ${m.subtitle}` : ''}` }}</th>
+                <tr id="information-row">
+                    <th colspan="3">
+                        <img src="../assets/Escudo_nacional_del_Perú.svg" alt="Escudo Perú" class="header-logo">
+                    </th>
+                    <th colspan="6" class="header-titles">
+                        <h2>{{currentMode.title}}</h2>
+                        <h3 v-if="currentMode.subtitle">{{ currentMode.subtitle }}</h3>
+                    </th>
+                    <th colspan="3">
+                        <img src="../assets/ONPE.png" alt="Logo ONPE" class="header-logo onpe-logo">
+                    </th>
+                </tr>
+                <tr id="instruction-row">
+                    <th :colspan="currentStep === 0 ? 12 : 8">
+                        MARQUE CON UNA CRUZ <b>+</b> O UN ASPA <b>x</b> DENTRO DEL RECUADRO DEL SÍMBOLO Y/O FOTOGRAFÍA DE SU PREFERENCIA
+                    </th>
+                    <th v-if="currentStep !== 0" colspan="4" class="pref-instructions">
+                        VOTO PREFERENCIAL
+                        <h5>SI DESEA COLOQUE DENTRO DEL RECUADRO EL NÚMERO DEL CANDIDATO DE SU PREFERENCIA</h5>
+                    </th>
                 </tr>
             </thead>
+
             <tbody>
                 <tr>
-                    <td>
+                    <td colspan="6" :style="{ backgroundColor: currentMode.backgroundColor }">CANDIDATO X</td>
+                    <td class="clickable-cell" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }"> 
+                        <div v-if="currentStep !== 0" class="vote-box"></div>
+                    </td>
+                    <td class="clickable-cell" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
+                        <div class="vote-box"></div>
+                    </td>
+                    <td class="clickable-cell" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
+                        <div v-if="currentStep !== 2" class="vote-box"></div>
+                    </td>
+                </tr>
+
+                <tr id="main-row">
+                    <td :colspan="currentStep === 0 ? 8 : 6" :style="{ backgroundColor: currentMode.backgroundColor }">
+                        PARTIDO JUNTOS POR EL PERÚ
+                    </td>
+                    <td @click="alternateVote(1)" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
+                        <div :class="`vote-box ${currentVotes.box1 ? '' : 'beat-box'}`" 
+                            style="background-image: url('/Logo_juntos_por_el_Peru.svg');">
+                            <span v-if="currentVotes.box1" class="x-mark">X</span>
+                        </div>
+                    </td>
+
+                    <td v-if="currentStep === 0" @click="alternateVote(2)" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
+                        <div :class="`vote-box ${currentVotes.box2 ? '' : 'pulsing-box'}`" 
+                            style="background-image: url('/PRESIDENTE/Roberto.png');">
+                            <span v-if="currentVotes.box2" class="x-mark">X</span>
+                        </div>
+                    </td>
+
+                    <td v-if="currentStep !== 0" @click="openModal(1)" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
+                        <div :class="`vote-box ${currentVotes.preferentialVote1 ? '' : 'pulsing-box'}`">
+                            <span v-if="currentVotes.preferentialVote1" class="x-mark">{{ currentVotes.preferentialVote1 }}</span>
+                        </div>
+                    </td>
+
+                    <td v-if="currentStep !== 0" @click="openModal(2)" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
+                        <div v-if="[1, 3, 4].includes(currentStep)" :class="`vote-box ${currentVotes.preferentialVote2 ? '' : 'pulsing-box'}`">
+                            <span v-if="currentVotes.preferentialVote2" class="x-mark">{{ currentVotes.preferentialVote2 }}</span>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td colspan="6" :style="{ backgroundColor: currentMode.backgroundColor }">CANDIDATO Y</td>
+                    <td colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
+                        <div v-if="currentStep !== 0" class="vote-box"></div>
+                    </td>
+                    <td colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
+                        <div class="vote-box"></div>
+                    </td>
+                    <td colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
+                        <div v-if="currentStep !== 2" class="vote-box"></div>
                     </td>
                 </tr>
             </tbody>
         </table>
-    </div>
 
-    <div class="button-container">
-        <button id="btnBack" class="black-button" @click="goBack" :disabled="currentStep === 0">ATRÁS</button>
-        <button id="btnForward" class="black-button" @click="goForward">
-        {{ currentStep === tableModes.length - 1 ? 'FINALIZAR' : 'SIGUIENTE' }}
-        </button>
+        <div v-if="!showVoteResult" id="message-container">
+            <h3>Toma en cuenta:</h3>
+            <p>
+                1. Marcar como mínimo el logo del partido (Símbolo).<br>
+                2. Se debe marcar el símbolo antes de ingresar el voto preferencial.<br>
+                3. El voto preferencial es opcional.<br>
+                4. El voto preferencial no puede repetirse.
+            </p>
+        </div>
+
+        <div v-if="showVoteResult" class="results-container">
+            
+            <div ref="captureArea" class="capture-wrapper" style="background-color: #ffffff; padding: 2rem; border-radius: 12px; width: 100%;">
+                
+                <h2 class="results-main-title">Resumen de tu Votación</h2>
+                
+                <div class="results-grid">
+                    <div v-for="(mode, index) in tableModes" :key="index" class="result-card">
+                        
+                        <div class="result-header">
+                            <h4>{{ mode.title }}</h4>
+                            <span v-if="mode.subtitle">{{ mode.subtitle }}</span>
+                        </div>
+
+                        <div class="result-body" :style="{ backgroundColor: mode.backgroundColor }">
+                            <span class="party-name">JUNTOS POR EL PERÚ</span>
+
+                            <div class="result-boxes">
+                                <div class="vote-box result-box" style="background-image: url('/Logo_juntos_por_el_Peru.png');">
+                                    <span v-if="votes[index].box1" class="x-mark">X</span>
+                                </div>
+
+                                <div v-if="index === 0 && 'box2' in votes[index]" class="vote-box result-box" style="background-image: url('/PRESIDENTE/Roberto.png');">
+                                    <span v-if="votes[index].box2" class="x-mark">X</span>
+                                </div>
+
+                                <div v-if="'preferentialVote1' in votes[index]" class="vote-box result-box">
+                                    <span v-if="votes[index].preferentialVote1 !== null" class="x-mark">{{ votes[index].preferentialVote1 }}</span>
+                                </div>
+
+                                <div v-if="'preferentialVote2' in votes[index]" class="vote-box result-box">
+                                    <span v-if="votes[index].preferentialVote2 !== null" class="x-mark">{{ votes[index].preferentialVote2 }}</span>
+                                </div>
+                            </div>
+                        </div> </div> </div> </div> <div class="results-footer">
+                <img src="../assets/IMAGEN FINAL.png" alt="Mascota Juntos por el Perú" class="party-mascot" />
+                
+                <button class="share-button" @click="downloadResults">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="18" cy="5" r="3"></circle>
+                        <circle cx="6" cy="12" r="3"></circle>
+                        <circle cx="18" cy="19" r="3"></circle>
+                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                    </svg>
+                    DESCARGAR RESULTADOS
+                </button>
+            </div>
+
+        </div>
+
+        <div class="button-container">
+            <button id="btnBack" class="black-button" @click="goBack" :disabled="currentStep === 0">ATRÁS</button>
+            <button id="btnForward" class="black-button" @click="goForward">
+                {{ currentStep === tableModes.length - 1 ? 'FINALIZAR' : 'SIGUIENTE' }}
+            </button>
+        </div>
     </div>
 
     <PreferentialModal 
@@ -267,204 +334,396 @@ import PreferentialModal from './PreferentialModal.vue';
         @selectCandidate="savePreferentialVote" 
         @cancel="showModal = false"
     />
-
 </template>
 
 <style scoped>
-    .button-container{
-        display: flex;
-        width: 100%;
-        gap: 1rem;
-    }
+/* Contenedor principal para restringir el ancho global */
+.vote-component-wrapper {
+    width: 100%;
+    max-width: 650px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+}
 
-    .black-button{
-        border-radius: 0;
-        width: 50%;
-        padding: 0.5rem;
-        font-weight: bold;
-        color: white;
-        background-color: black;
-    }
+/* =========================================
+   ESTILOS DE LA TABLA
+========================================= */
+#vote-table {
+    border-collapse: separate;
+    border: none;
+    table-layout: fixed; /* Mantiene las columnas estrictas */
+    width: 100%; /* Ahora la tabla es fluida */
+    border-spacing: 0 0.25rem;
+    font-weight: bold;
+    font-size: clamp(0.7rem, 2.5vw, 1rem); /* Texto general elástico */
+}
 
-    .black-button:hover{
-        background-color: white;
-        color: black;
-        transition: 0.35s;
-        border: 1px solid black;
-    }
+/* Reducimos el padding en celdas para que quepan en celulares */
+#vote-table td {
+    padding: clamp(0.2rem, 1.5vw, 1rem);
+    border-bottom: 0.75rem solid white;
+    text-align: center;
+}
 
-    #vote-table{
-        border-collapse: separate;
-        border: none;
-        table-layout: fixed;
-        max-width: 600px;
-        border-spacing: 0 0.25rem;
-        font-weight: bold;
-    }
+/* Títulos del encabezado */
+.header-titles h2 {
+    margin: 0;
+    font-size: clamp(0.9rem, 3vw, 1.5rem);
+}
+.header-titles h3 {
+    margin: 0;
+    font-size: clamp(0.7rem, 2vw, 1rem);
+    color: #444;
+}
 
-    #vote-table td{
-        padding: 1rem;
-        border-bottom: 0.75rem solid white;
-    }
+/* Imágenes del encabezado responsivas */
+.header-logo {
+    width: clamp(40px, 12vw, 80px);
+    height: auto;
+    object-fit: contain;
+}
 
-    #result-table{
-        border-collapse: separate;
-        border: none;
-        table-layout: fixed;
-        border-spacing: 0.5rem;
-        font-weight: bold;
-    }
+#information-row th:first-child { text-align: left; }
+#information-row th:last-child { text-align: right; }
 
-    #result-table th{
-        font-size:small;
-        padding: 1rem;
-        border: 1px solid black;
-    }
+#instruction-row th {
+    padding: clamp(0.5rem, 2vw, 1rem);
+    background-color: #ccc;
+    font-size: clamp(0.6rem, 2vw, 0.9rem);
+}
+.pref-instructions h5 {
+    margin: 0.2rem 0 0 0;
+    font-size: clamp(0.5rem, 1.5vw, 0.75rem);
+}
 
-    #information-row th:first-child{
-        text-align: left;
-    }
-    #information-row th:last-child{
-        text-align: right;
-    }
-    
-    #instruction-row th{
-        padding: 1rem 2rem;
-        background-color: #ccc;
-    }
+/* Las "X" y "+" de las instrucciones */
+#vote-table b {
+    border: 1px solid black;
+    background-color: white;
+    font-size: clamp(0.9rem, 3vw, 1.2rem);
+    padding: 0px 4px;
+    display: inline-block;
+}
 
-    #vote-table b{
-        border: 1px solid;
-        border-color: black;
-        background-color: white;
-        font-size:x-large;
-        padding: 0px 5px;
-    }
+/* =========================================
+   CAJAS DE VOTACIÓN
+========================================= */
+.vote-box {
+    width: 95%;
+    margin: 0 auto; /* Centra la caja en su td */
+    background-color: white;
+    border: 2px solid black;
+    /* La altura se ajusta en móviles para no deformar la tabla */
+    height: clamp(35px, 8vw, 50px);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    cursor: not-allowed;
+    transition: background-color 0.2s;
+}
 
-    .vote-box{
-        width: 95%;
-        background-color: white;
-        border: 2px solid black;
-        height: 50px;
-        position: relative;
-        background-position: center;
-        background-repeat: no-repeat;
-        background-size:contain;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        position: relative;
-        cursor:not-allowed;
-    }
+#vote-table td:has(.vote-box) {
+    padding: 0; /* Quitamos el padding si hay caja para aprovechar espacio */
+}
 
-    #vote-table td:has(.vote-box) {
-        padding: 0;
-    }
+.x-mark {
+    font-size: clamp(1.5rem, 6vw, 3rem); /* La X se achica en celulares */
+    font-weight: bold;
+    color: #000;
+    font-family: Arial, sans-serif;
+    user-select: none;
+    position: absolute; 
+}
 
-    .x-mark {
-        font-size: 3rem;
-        font-weight: bold;
-        color: #000;
-        font-family: Arial, sans-serif;
-        user-select: none;
-        position: absolute; 
-    }
+.vote-box:hover {
+    background-color: #f0f0f0;
+}
 
-    .vote-box:hover {
-        background-color: #f0f0f0;
-    }
+/* =========================================
+   ANIMACIONES
+========================================= */
+@keyframes boxPulse {
+    0% { filter: brightness(1); }
+    50% { filter: brightness(0.8); } 
+    100% { filter: brightness(1); }
+}
 
-    .card{
-        width: 100%;
-        background-color: white;
-        color: black;
-        border: 1px solid black;
-        margin-bottom: 3rem;
-        padding: 1rem;
-    }
+.pulsing-box {
+    animation: boxPulse 1s infinite;
+    cursor: pointer;
+}
+.pulsing-box:hover {
+    animation: none;
+    background-color: lightpink !important;
+}
 
-    @keyframes boxPulse {
-        0% { filter: brightness(1); }
-        50% { filter: brightness(0.8); } /* Oscurece el fondo ligerísimamente */
-        100% { filter: brightness(1); }
+.beat-box {
+    animation: heartbeatBox 1.5s infinite;
+    cursor: pointer;
+}
+@keyframes heartbeatBox {
+    0% { transform: scale(1); box-shadow: 0 0 0 rgba(229, 28, 36, 0); }
+    50% { 
+        transform: scale(1.05); 
+        box-shadow: 0 0 10px rgba(229, 28, 36, 0.6); 
+        border-color: #E51C24;
     }
+    100% { transform: scale(1); box-shadow: 0 0 0 rgba(229, 28, 36, 0); }
+}
 
-    .pulsing-box{
-        animation: boxPulse 1s infinite;
-        cursor: pointer;
-    }
+/* Flechas laterales animadas */
+#main-row td:first-child,
+#main-row td:last-child {
+    position: relative;
+}
 
-    .pulsing-box:hover{
-        animation: none;
-        background-color: lightpink !important;
-    }
+#main-row td:first-child::before {
+    content: "▶";
+    position: absolute;
+    /* En PC están lejos, en celular se acercan para no salirse de la pantalla */
+    left: clamp(-15px, -3vw, -30px);
+    top: 50%;
+    transform: translateY(-50%);
+    color: lightcoral;
+    font-size: clamp(1rem, 3vw, 1.5rem);
+    animation: sideArrowsLeft 0.8s infinite alternate;
+}
 
-    .beat-box {
-        animation: heartbeatBox 1.5s infinite;
-        cursor: pointer;
-    }
+#main-row td:last-child::after {
+    content: "◀";
+    position: absolute;
+    right: clamp(-15px, -3vw, -30px);
+    top: 50%;
+    transform: translateY(-50%);
+    color: lightcoral;
+    font-size: clamp(1rem, 3vw, 1.5rem);
+    animation: sideArrowsRight 0.8s infinite alternate;
+}
 
-    @keyframes heartbeatBox {
-        0% { 
-            transform: scale(1); 
-            box-shadow: 0 0 0 rgba(229, 28, 36, 0); 
-        }
-        50% { 
-            transform: scale(1.08); /* Crece un 8% */
-            box-shadow: 0 0 15px rgba(229, 28, 36, 0.6); /* Sombra roja externa */
-            border-color: #E51C24;
-        }
-        100% { 
-            transform: scale(1); 
-            box-shadow: 0 0 0 rgba(229, 28, 36, 0); 
-        }
-    }
+@keyframes sideArrowsLeft {
+    0% { opacity: 0; transform: translateY(-50%) scale(0.8); }
+    100% { opacity: 1; transform: translateY(-50%) translateX(5px) scale(1.1); }
+}
+@keyframes sideArrowsRight {
+    0% { opacity: 0; transform: translateY(-50%) scale(0.8); }
+    100% { opacity: 1; transform: translateY(-50%) translateX(-5px) scale(1.1); }
+}
 
-    #main-row td:first-child,
-    #main-row td:last-child {
-        position: relative;
-    }
+/* =========================================
+   OTROS CONTENEDORES
+========================================= */
+#message-container {
+    background-color: darkgoldenrod;
+    color: white;
+    border: 2px solid goldenrod;
+    width: 100%;
+    padding: clamp(1rem, 3vw, 1.5rem);
+    box-sizing: border-box;
+    font-size: clamp(0.8rem, 2.5vw, 1rem);
+    border-radius: 4px;
+}
+#message-container h3 { margin-top: 0; }
+#message-container p { margin-bottom: 0; line-height: 1.5; }
 
-    #main-row td:first-child::before {
-        content: "▶";
-        position: absolute;
-        left: -30px;
-        top: 50%; /* Lo centra verticalmente */
-        color: lightcoral;
-        font-size: 1.5rem;
-        animation: sideArrows 0.8s infinite alternate;
-    }
+.button-container {
+    display: flex;
+    width: 100%;
+    gap: 1rem;
+}
+.black-button {
+    border-radius: 4px; /* Bordes ligeramente suaves */
+    width: 50%;
+    padding: clamp(0.7rem, 2vw, 1rem);
+    font-size: clamp(0.9rem, 2.5vw, 1.2rem);
+    font-weight: bold;
+    color: black;
+    background-color: white;
+    border: 2px solid black;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+.black-button:disabled {
+    background-color: #555;
+    border-color: #555;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+.black-button:not(:disabled):hover {
+    background-color: black;
+    color: white;
+}
 
-    #main-row td:last-child::after {
-        content: "◀";
-        position: absolute;
-        right: -30px;
-        top: 50%;
-        color: lightcoral;
-        font-size: 1.5rem;
-        animation: sideArrows 0.8s infinite alternate;
-    }
+/* =========================================
+   GRILLA DE RESULTADOS (Responsiva)
+========================================= */
+.results-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
 
-    /* 4. La animación que las hace aparecer y desaparecer */
-    @keyframes sideArrows {
-        0% { 
-            opacity: 0; /* Totalmente invisibles */
-            transform: translateY(-50%) scale(0.8); /* Ligeramente más pequeñas */
-        }
-        100% { 
-            opacity: 1; /* Totalmente visibles */
-            transform: translateY(-50%) scale(1.2); /* Ligeramente más grandes */
-        }
-    }
+.results-main-title {
+    color: #E51C24;
+    font-size: clamp(1.5rem, 5vw, 2rem);
+    text-align: center;
+    margin: 0;
+}
 
-    #message-container{
-        background-color: darkgoldenrod;
-        color: white;
-        border: 2px solid goldenrod;
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        margin-bottom: 1rem;
-        padding: 1.5rem;
-    }
+.results-grid {
+    display: grid;
+    /* ESTO ES LA MAGIA RESPONSIVA: 
+       Crea tantas columnas como quepan. Cada tarjeta medirá mínimo 250px. 
+       Si la pantalla es menor a 250px, ocupará el 100% (1fr). */
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    width: 100%;
+}
+
+.result-card {
+    background-color: white;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    overflow: hidden; /* Para que el header respete los bordes curvos */
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    transition: transform 0.2s ease;
+}
+
+.result-card:hover {
+    transform: translateY(-5px); /* Pequeño salto al pasar el mouse */
+    box-shadow: 0 8px 12px rgba(0,0,0,0.1);
+}
+
+.result-header {
+    padding: 1rem;
+    text-align: center;
+    border-bottom: 2px solid #ccc;
+    min-height: 80px; /* Unifica el tamaño de los encabezados */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.result-header h4 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #333;
+}
+
+.result-header span {
+    font-size: 0.8rem;
+    color: #666;
+    margin-top: 0.25rem;
+}
+
+.result-body {
+    padding: 1.5rem 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    flex-grow: 1; /* Empuja el contenido para llenar el espacio vertical */
+    background-color: #fafafa;
+}
+
+.party-name {
+    font-weight: bold;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #444;
+}
+
+.result-boxes {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    width: 100%;
+}
+
+/* Reutilizamos la clase .vote-box pero la ajustamos para la tarjeta */
+.result-box {
+    width: 60px !important;
+    height: 60px !important;
+    border: 2px solid black;
+    cursor: default !important; /* Quitamos la manito porque ya no es clickeable */
+    background-color: white !important; /* Forzamos blanco para anular el hover de la tabla */
+    animation: none !important; /* Anulamos cualquier latido */
+}
+
+.result-box .x-mark {
+    font-size: 2.5rem !important; /* X un poco más proporcionada para la tarjeta */
+}
+
+/* =========================================
+   FOOTER DE RESULTADOS (Mascota y Compartir)
+========================================= */
+.results-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    width: 100%;
+    margin-top: 1.5rem;
+    padding-top: 2rem;
+    border-top: 2px dashed #ccc; /* Línea separadora sutil */
+}
+
+/* Responsividad para la imagen de la mascota */
+.party-mascot {
+    width: clamp(120px, 25vw, 200px); /* Crece y se achica según la pantalla */
+    height: auto;
+    object-fit: contain;
+    /* Un ligero sombreado para que la mascota resalte del fondo blanco */
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+    transition: transform 0.3s ease;
+}
+
+/* Pequeña animación: la mascota flota suavemente si quieres darle vida */
+.party-mascot:hover {
+    transform: translateY(-5px) scale(1.05);
+}
+
+/* Estilo del botón de Compartir */
+.share-button {
+    background-color: #5CBE12; /* Verde llamativo */
+    color: white;
+    border: none;
+    /* Padding amplio y border-radius 50px crea la forma de "píldora" */
+    padding: 1rem 2rem; 
+    border-radius: 50px; 
+    font-size: clamp(1rem, 3vw, 1.2rem);
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem; /* Separación entre el icono y el texto */
+    box-shadow: 0 4px 10px rgba(92, 190, 18, 0.3); /* Sombra verde difuminada */
+    transition: all 0.2s ease;
+}
+
+.share-button svg {
+    /* Asegura que el icono no se deforme */
+    flex-shrink: 0; 
+}
+
+.share-button:hover {
+    background-color: #4da30f; /* Un verde ligeramente más oscuro */
+    transform: translateY(-3px); /* Se levanta un poco */
+    box-shadow: 0 6px 15px rgba(92, 190, 18, 0.4);
+}
+
+.share-button:active {
+    transform: translateY(0); /* Efecto de ser presionado */
+}
 </style>
