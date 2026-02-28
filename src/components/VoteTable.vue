@@ -137,10 +137,6 @@ import PreferentialModal from './PreferentialModal.vue';
 </script>
 
 <template>
-    <div class="card vote-message">
-      <h1>{{showVoteResult.value ? "Resultado del voto!" : "Practica tu voto!"}}</h1>
-      <img src="../assets/Logo_juntos_por_el_Peru.svg" width="100px" height="100px"/>
-    </div>
 
     <table v-if="!showVoteResult" id="vote-table">
         <colgroup>
