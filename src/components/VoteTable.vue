@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, nextTick } from 'vue';
 import PreferentialModal from './PreferentialModal.vue';
 import html2canvas from 'html2canvas';
 import CustomAlert from './CustomAlert.vue';
@@ -18,33 +18,35 @@ const triggerAlert = (message, title = 'Atención', type = 'warning') => {
 };
 
 const captureArea = ref(null);
+const isDownloading = ref(false);
 
 // La función que genera y descarga la imagen
 const downloadResults = async () => {
     if (!captureArea.value) return;
 
     try {
-        // html2canvas toma el elemento HTML y lo dibuja
+        isDownloading.value = true; // 1. Encendemos el modo exportación
+        await nextTick(); // 2. Esperamos a que el HTML cambie de forma
+
         const canvas = await html2canvas(captureArea.value, {
-            scale: 2, // Aumenta la resolución para que no se vea borroso al compartir
-            backgroundColor: '#ffffff', // Fuerza fondo blanco por si acaso
-            useCORS: true // Súper importante para que renderice imágenes/logos externos sin error
+            scale: 2,
+            backgroundColor: '#ffffff',
+            useCORS: true
         });
 
-        // Convertimos el canvas a un formato de imagen PNG (Data URL)
         const imageURL = canvas.toDataURL("image/png");
 
-        // Truco de HTML5 para forzar la descarga: creamos un enlace invisible y le hacemos clic
         const link = document.createElement('a');
         link.href = imageURL;
-        link.download = 'Mis_Resultados_JP.png'; // El nombre del archivo que se descargará
+        link.download = 'Mis_Resultados_JP.png';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
 
     } catch (error) {
         console.error("Error al generar la imagen:", error);
-        alert("Hubo un error al generar la imagen de tus resultados.");
+    } finally {
+        isDownloading.value = false; // 3. Devolvemos la vista del celular a la normalidad
     }
 };
 
@@ -284,11 +286,19 @@ const downloadResults = async () => {
 
         <div v-if="showVoteResult" class="results-container">
             
-            <div ref="captureArea" class="capture-wrapper" style="background-color: #ffffff; padding: 2rem; border-radius: 12px; width: 100%;">
-                
-                <h2 class="results-main-title">Resumen de tu Votación</h2>
-                
+            <div ref="captureArea" class="capture-wrapper" :class="{ 'exporting': isDownloading }" style="background-color: #ffffff; padding: 2rem; border-radius: 12px;">
+            
                 <div class="results-grid">
+                    <div class="result-card">
+                        <div class="result-header">
+                            <h4 style="color: red;">YO VOTARÉ ASÍ POR JUNTOS POR EL PERÚ.</h4>
+                        </div>
+                        <div class="result-body" style="background-color: #ffffff;">
+                            <span class="party-name" style="color: green;">¡TÚ TAMBIÉN PUEDES HACERLO!</span>
+                            <span class="party-name">INGRESA A: <b>JPvoto.com</b></span>
+                        </div>
+                    </div>
+
                     <div v-for="(mode, index) in tableModes" :key="index" class="result-card">
                         
                         <div class="result-header">
@@ -316,7 +326,12 @@ const downloadResults = async () => {
                                     <span v-if="votes[index].preferentialVote2 !== null" class="x-mark">{{ votes[index].preferentialVote2 }}</span>
                                 </div>
                             </div>
-                        </div> </div> </div> </div> <div class="results-footer">
+                        </div> 
+                    </div>
+                
+                </div> 
+            </div> 
+                        <div class="results-footer">
                 <img src="../assets/IMAGEN FINAL.png" alt="Mascota Juntos por el Perú" class="party-mascot" />
                 
                 <button class="share-button" @click="downloadResults">
@@ -358,6 +373,10 @@ const downloadResults = async () => {
 </template>
 
 <style scoped>
+
+.party-name b{
+    color: blue;
+}
 /* Contenedor principal para restringir el ancho global */
 .vote-component-wrapper {
     width: 100%;
@@ -601,12 +620,18 @@ const downloadResults = async () => {
 
 .results-grid {
     display: grid;
-    /* ESTO ES LA MAGIA RESPONSIVA: 
-       Crea tantas columnas como quepan. Cada tarjeta medirá mínimo 250px. 
-       Si la pantalla es menor a 250px, ocupará el 100% (1fr). */
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    /* Diseño por defecto (Mobile-first): 1 sola columna para celulares */
+    grid-template-columns: 1fr; 
     gap: 1.5rem;
     width: 100%;
+}
+
+/* Cuando la pantalla sea de 600px o más (Tablets y PCs) */
+@media (min-width: 600px) {
+    .results-grid {
+        /* Fuerza exactamente 2 columnas del mismo ancho */
+        grid-template-columns: repeat(2, 1fr); 
+    }
 }
 
 .result-card {
@@ -695,7 +720,6 @@ const downloadResults = async () => {
     justify-content: center;
     gap: 1.5rem;
     width: 100%;
-    margin-top: 1.5rem;
     padding-top: 2rem;
     border-top: 2px dashed #ccc; /* Línea separadora sutil */
 }
@@ -746,5 +770,20 @@ const downloadResults = async () => {
 
 .share-button:active {
     transform: translateY(0); /* Efecto de ser presionado */
+}
+
+/* =========================================
+   MODO EXPORTACIÓN (Lo que captura la foto)
+========================================= */
+/* Cuando le damos clic a descargar, esta clase toma el control */
+.exporting {
+    /* Forzamos un ancho fijo de escritorio para que las tarjetas no se aplasten */
+    width: 800px !important; 
+    max-width: 800px !important;
+}
+
+/* Obligamos a la grilla a tener 2 columnas, sin importar el dispositivo */
+.exporting .results-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
 }
 </style>
