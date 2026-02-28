@@ -104,6 +104,7 @@ const selectNumber = (number) => {
 /* Estilos de la nueva tarjeta de candidato */
 .candidate-card {
   display: flex;
+  border-radius: 4px;
   flex-direction: column;
   align-items: center;
   background-color: white;
@@ -150,8 +151,9 @@ const selectNumber = (number) => {
 }
 
 .btn-cancel {
-  background-color: black;
-  color: white;
+  background-color: white;
+  color: black;
+  border: 2px solid black;
   padding: 0.5rem;
   cursor: pointer;
   font-weight: bold;
@@ -159,8 +161,8 @@ const selectNumber = (number) => {
 }
 
 .btn-cancel:hover {
-  background-color: white;
-  color: black;
+  background-color: black;
+  color: white;
   transition: 0.35s;
 }
 </style>

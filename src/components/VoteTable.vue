@@ -2,10 +2,24 @@
 import { ref, computed } from 'vue';
 import PreferentialModal from './PreferentialModal.vue';
 import html2canvas from 'html2canvas';
+import CustomAlert from './CustomAlert.vue';
+
+// CONFIGURACIÓN DE LA ALERTA
+const alertConfig = ref({
+    show: false,
+    title: '',
+    message: '',
+    type: 'warning'
+});
+
+// Función auxiliar para llamar la alerta fácilmente
+const triggerAlert = (message, title = 'Atención', type = 'warning') => {
+    alertConfig.value = { show: true, title, message, type };
+};
 
 const captureArea = ref(null);
 
-// 3. La función que genera y descarga la imagen
+// La función que genera y descarga la imagen
 const downloadResults = async () => {
     if (!captureArea.value) return;
 
@@ -91,7 +105,7 @@ const downloadResults = async () => {
     const activePreferentialBox = ref(null);
     const openModal = (boxNumber) => {
         if (!currentVotes.value.box1) {
-            alert('Por favor, marque primero el símbolo del partido antes de ingresar su voto preferencial.');
+            triggerAlert('Por favor, marque primero el símbolo del partido antes de ingresar su voto preferencial.');
             return;
         }
 
@@ -114,7 +128,7 @@ const downloadResults = async () => {
         // Validación: Evitar que el voto preferencial se repita
         // Verificamos si la otra caja existe en este modo y si tiene el mismo número
         if (otherBoxKey in v && v[otherBoxKey] === candidateNumber) {
-            alert(`El candidato #${candidateNumber} ya ha sido seleccionado en la otra casilla. Por favor, elija un candidato diferente o deje la casilla en blanco.`);
+            triggerAlert(`El candidato #${candidateNumber} ya ha sido seleccionado en la otra casilla. Por favor, elija un candidato diferente o deje la casilla en blanco.`);
             return; // Detenemos la función aquí, el modal no se cierra
         }
 
@@ -144,9 +158,8 @@ const downloadResults = async () => {
     const goForward = () => {
         // Validamos que se hayan marcado las cajas requeridas
         const v = currentVotes.value;
-
         if (!v.box1) {
-            alert(`Por favor, marca las ${required} casillas correspondientes a Juntos por el Perú (#15) para practicar tu voto.`);
+            triggerAlert(`Por favor, marca el recuadro de Juntos por el Perú antes de avanzar.`);
             return;
         }
 
@@ -154,7 +167,7 @@ const downloadResults = async () => {
         if (currentStep.value < tableModes.length - 1) {
             currentStep.value++;
         } else {
-            alert('¡Felicidades! Has completado el tutorial de votación.');
+            triggerAlert('Has completado el tutorial de votación.', '¡Felicidades!', 'success');
             showVoteResult.value = true;
         }
     };
@@ -333,6 +346,14 @@ const downloadResults = async () => {
         :candidates="currentMode.preferentialVotes"
         @selectCandidate="savePreferentialVote" 
         @cancel="showModal = false"
+    />
+
+    <CustomAlert 
+        :show="alertConfig.show"
+        :title="alertConfig.title"
+        :message="alertConfig.message"
+        :type="alertConfig.type"
+        @close="alertConfig.show = false"
     />
 </template>
 
