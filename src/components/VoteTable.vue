@@ -187,6 +187,8 @@ const fakeRows = ref([]);
 let rowInterval = null;
 
 const playRowAnimation = () => {
+    const delay = currentStep.value === 0 ? 500 : 100;
+
     // Llenamos el arreglo con los números del 1 al 13: [1, 2, 3... 13]
     fakeRows.value = Array.from({ length: 13 }, (_, i) => i + 1);
     
@@ -199,7 +201,7 @@ const playRowAnimation = () => {
         } else {
             clearInterval(rowInterval);
         }
-    }, 100); 
+    }, delay); 
 };
 
 // Reproducir al cargar la tabla por primera vez
@@ -249,7 +251,7 @@ watch(currentStep, () => {
                 <tbody>
 
                     <tr v-for="i in fakeRows" :key="'fake-' + i" class="fake-row">
-                        <td colspan="6" :style="{ backgroundColor: currentMode.backgroundColor }">PARTIDO POLÍTICO {{ i }}</td>
+                        <td colspan="6" :style="{ backgroundColor: currentMode.backgroundColor }" :data-row="i">PARTIDO POLÍTICO {{ i }}</td>
                         <td colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
                             <div v-if="currentStep !== 0" class="vote-box"></div>
                         </td>
@@ -585,40 +587,52 @@ watch(currentStep, () => {
     100% { transform: scale(1); box-shadow: 0 0 0 rgba(229, 28, 36, 0); }
 }
 
-/* Flechas laterales animadas */
+/* =========================================
+   ANIMACION DE FILAS (NUMERO O FLECHA LATERAL)
+========================================= */
 #main-row td:first-child,
-#main-row td:last-child {
+#main-row td:last-child,
+.fake-row td:first-child{
     position: relative;
 }
 
-#main-row td:first-child::before {
-    content: "▶";
+#main-row td:first-child::before{
+    content: "16";
     position: absolute;
-    /* En PC están lejos, en celular se acercan para no salirse de la pantalla */
     left: clamp(-15px, -3vw, -30px);
     top: 50%;
     transform: translateY(-50%);
     color: lightcoral;
-    font-size: clamp(1rem, 3vw, 1.5rem);
-    animation: sideArrowsLeft 0.8s infinite alternate;
+    font-size: clamp(0.8rem, 3vw, 1.2rem);
+    animation: pulsingLeftElement 0.8s infinite alternate;
 }
 
 #main-row td:last-child::after {
-    content: "◀";
+    content: "16";
     position: absolute;
     right: clamp(-15px, -3vw, -30px);
     top: 50%;
     transform: translateY(-50%);
     color: lightcoral;
-    font-size: clamp(1rem, 3vw, 1.5rem);
-    animation: sideArrowsRight 0.8s infinite alternate;
+    font-size: clamp(0.8rem, 3vw, 1.2rem);
+    animation: pulsingRightElement 0.8s infinite alternate;
 }
 
-@keyframes sideArrowsLeft {
+.fake-row td:first-child::before{
+    content: attr(data-row);
+    position: absolute;
+    left: clamp(-20px, -3vw, -40px);
+    top: 50%;
+    transform: translateY(-50%);
+    color: black;
+    font-size: clamp(0.8rem, 3vw, 1.2rem);
+}
+
+@keyframes pulsingLeftElement {
     0% { opacity: 0; transform: translateY(-50%) scale(0.8); }
     100% { opacity: 1; transform: translateY(-50%) translateX(5px) scale(1.1); }
 }
-@keyframes sideArrowsRight {
+@keyframes pulsingRightElement {
     0% { opacity: 0; transform: translateY(-50%) scale(0.8); }
     100% { opacity: 1; transform: translateY(-50%) translateX(-5px) scale(1.1); }
 }
