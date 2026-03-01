@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, nextTick } from 'vue';
+import { ref, computed, nextTick, onMounted, watch } from 'vue';
 import PreferentialModal from './PreferentialModal.vue';
 import html2canvas from 'html2canvas';
 import CustomAlert from './CustomAlert.vue';
@@ -181,106 +181,181 @@ const downloadResults = async () => {
         }
         if (currentStep.value > 0) currentStep.value--;
     };
+
+// --- LÓGICA DE LA ANIMACIÓN DE FILAS ---
+const fakeRows = ref([]);
+let rowInterval = null;
+
+const playRowAnimation = () => {
+    // Llenamos el arreglo con los números del 1 al 13: [1, 2, 3... 13]
+    fakeRows.value = Array.from({ length: 13 }, (_, i) => i + 1);
+    
+    if (rowInterval) clearInterval(rowInterval);
+    
+    // Cada 80 milisegundos quitamos la fila de MÁS ARRIBA
+    rowInterval = setInterval(() => {
+        if (fakeRows.value.length > 0) {
+            fakeRows.value.shift(); // shift() borra el primer elemento del arreglo
+        } else {
+            clearInterval(rowInterval);
+        }
+    }, 100); 
+};
+
+// Reproducir al cargar la tabla por primera vez
+onMounted(() => {
+    playRowAnimation();
+});
+
+// Reproducir cada vez que el usuario cambie de paso (siguiente/atrás)
+watch(currentStep, () => {
+    playRowAnimation();
+});
 </script>
 
 <template>
     <div class="vote-component-wrapper">
         
-        <table v-if="!showVoteResult" id="vote-table">
-            <colgroup>
-                <col style="width: 8.33%;" v-for="i in 12" :key="i">
-            </colgroup>
-            <thead>
-                <tr id="information-row">
-                    <th colspan="3">
-                        <img src="../assets/Escudo_nacional_del_Perú.svg" alt="Escudo Perú" class="header-logo">
-                    </th>
-                    <th colspan="6" class="header-titles">
-                        <h2>{{currentMode.title}}</h2>
-                        <h3 v-if="currentMode.subtitle">{{ currentMode.subtitle }}</h3>
-                    </th>
-                    <th colspan="3">
-                        <img src="../assets/ONPE.png" alt="Logo ONPE" class="header-logo onpe-logo">
-                    </th>
-                </tr>
-                <tr id="instruction-row">
-                    <th :colspan="currentStep === 0 ? 12 : 8">
-                        MARQUE CON UNA CRUZ <b>+</b> O UN ASPA <b>x</b> DENTRO DEL RECUADRO DEL SÍMBOLO Y/O FOTOGRAFÍA DE SU PREFERENCIA
-                    </th>
-                    <th v-if="currentStep !== 0" colspan="4" class="pref-instructions">
-                        VOTO PREFERENCIAL
-                        <h5>SI DESEA COLOQUE DENTRO DEL RECUADRO EL NÚMERO DEL CANDIDATO DE SU PREFERENCIA</h5>
-                    </th>
-                </tr>
-            </thead>
+        <div v-if="!showVoteResult" class="table-window">
 
-            <tbody>
-                <tr>
-                    <td colspan="6" :style="{ backgroundColor: currentMode.backgroundColor }">CANDIDATO X</td>
-                    <td class="clickable-cell" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }"> 
-                        <div v-if="currentStep !== 0" class="vote-box"></div>
-                    </td>
-                    <td class="clickable-cell" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
-                        <div class="vote-box"></div>
-                    </td>
-                    <td class="clickable-cell" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
-                        <div v-if="currentStep !== 2" class="vote-box"></div>
-                    </td>
-                </tr>
+            <table id="vote-table">
+                <colgroup>
+                    <col style="width: 8.33%;" v-for="i in 12" :key="i">
+                </colgroup>
+                <thead>
+                    <tr id="information-row">
+                        <th colspan="3">
+                            <img src="../assets/Escudo_nacional_del_Perú.svg" alt="Escudo Perú" class="header-logo">
+                        </th>
+                        <th colspan="6" class="header-titles">
+                            <h2>{{currentMode.title}}</h2>
+                            <h3 v-if="currentMode.subtitle">{{ currentMode.subtitle }}</h3>
+                        </th>
+                        <th colspan="3">
+                            <img src="../assets/ONPE.png" alt="Logo ONPE" class="header-logo onpe-logo">
+                        </th>
+                    </tr>
+                    <tr id="instruction-row">
+                        <th :colspan="currentStep === 0 ? 12 : 8">
+                            MARQUE CON UNA CRUZ <b>+</b> O UN ASPA <b>x</b> DENTRO DEL RECUADRO DEL SÍMBOLO Y/O FOTOGRAFÍA DE SU PREFERENCIA
+                        </th>
+                        <th v-if="currentStep !== 0" colspan="4" class="pref-instructions">
+                            VOTO PREFERENCIAL
+                            <h5>SI DESEA COLOQUE DENTRO DEL RECUADRO EL NÚMERO DEL CANDIDATO DE SU PREFERENCIA</h5>
+                        </th>
+                    </tr>
+                </thead>
 
-                <tr id="main-row">
-                    <td :colspan="currentStep === 0 ? 8 : 6" :style="{ backgroundColor: currentMode.backgroundColor }">
-                        PARTIDO JUNTOS POR EL PERÚ
-                    </td>
-                    <td @click="alternateVote(1)" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
-                        <div :class="`vote-box ${currentVotes.box1 ? '' : 'beat-box'}`" 
-                            style="background-image: url('/Logo_juntos_por_el_Peru.svg');">
-                            <span v-if="currentVotes.box1" class="x-mark">X</span>
-                        </div>
-                    </td>
+                <tbody>
 
-                    <td v-if="currentStep === 0" @click="alternateVote(2)" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
-                        <div :class="`vote-box ${currentVotes.box2 ? '' : 'pulsing-box'}`" 
-                            style="background-image: url('/PRESIDENTE/Roberto.png');">
-                            <span v-if="currentVotes.box2" class="x-mark">X</span>
-                        </div>
-                    </td>
+                    <tr v-for="i in fakeRows" :key="'fake-' + i" class="fake-row">
+                        <td colspan="6" :style="{ backgroundColor: currentMode.backgroundColor }">PARTIDO POLÍTICO {{ i }}</td>
+                        <td colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
+                            <div v-if="currentStep !== 0" class="vote-box"></div>
+                        </td>
+                        <td colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
+                            <div class="vote-box"></div>
+                        </td>
+                        <td colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
+                            <div v-if="currentStep !== 2" class="vote-box"></div>
+                        </td>
+                    </tr>
 
-                    <td v-if="currentStep !== 0" @click="openModal(1)" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
-                        <div :class="`vote-box ${currentVotes.preferentialVote1 ? '' : 'pulsing-box'}`">
-                            <span v-if="currentVotes.preferentialVote1" class="x-mark">{{ currentVotes.preferentialVote1 }}</span>
-                        </div>
-                    </td>
+                    <tr>
+                        <td colspan="6" :style="{ backgroundColor: currentMode.backgroundColor }">PARTIDO POLÍTICO A</td>
+                        <td class="clickable-cell" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }"> 
+                            <div v-if="currentStep !== 0" class="vote-box"></div>
+                        </td>
+                        <td class="clickable-cell" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
+                            <div class="vote-box"></div>
+                        </td>
+                        <td class="clickable-cell" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
+                            <div v-if="currentStep !== 2" class="vote-box"></div>
+                        </td>
+                    </tr>
 
-                    <td v-if="currentStep !== 0" @click="openModal(2)" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
-                        <div v-if="[1, 3, 4].includes(currentStep)" :class="`vote-box ${currentVotes.preferentialVote2 ? '' : 'pulsing-box'}`">
-                            <span v-if="currentVotes.preferentialVote2" class="x-mark">{{ currentVotes.preferentialVote2 }}</span>
-                        </div>
-                    </td>
-                </tr>
+                    <tr>
+                        <td colspan="6" :style="{ backgroundColor: currentMode.backgroundColor }">PARTIDO POLÍTICO B</td>
+                        <td class="clickable-cell" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }"> 
+                            <div v-if="currentStep !== 0" class="vote-box"></div>
+                        </td>
+                        <td class="clickable-cell" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
+                            <div class="vote-box"></div>
+                        </td>
+                        <td class="clickable-cell" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
+                            <div v-if="currentStep !== 2" class="vote-box"></div>
+                        </td>
+                    </tr>
 
-                <tr>
-                    <td colspan="6" :style="{ backgroundColor: currentMode.backgroundColor }">CANDIDATO Y</td>
-                    <td colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
-                        <div v-if="currentStep !== 0" class="vote-box"></div>
-                    </td>
-                    <td colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
-                        <div class="vote-box"></div>
-                    </td>
-                    <td colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
-                        <div v-if="currentStep !== 2" class="vote-box"></div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+                    <tr id="main-row">
+                        <td :colspan="currentStep === 0 ? 8 : 6" :style="{ backgroundColor: currentMode.backgroundColor }">
+                            PARTIDO JUNTOS POR EL PERÚ
+                        </td>
+                        <td @click="alternateVote(1)" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
+                            <div :class="`vote-box ${currentVotes.box1 ? '' : 'beat-box'}`" 
+                                style="background-image: url('/Logo_juntos_por_el_Peru.svg');">
+                                <span v-if="currentVotes.box1" class="x-mark">X</span>
+                            </div>
+                        </td>
 
+                        <td v-if="currentStep === 0" @click="alternateVote(2)" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
+                            <div :class="`vote-box ${currentVotes.box2 ? '' : 'pulsing-box'}`" 
+                                style="background-image: url('/PRESIDENTE/Roberto.png');">
+                                <span v-if="currentVotes.box2" class="x-mark">X</span>
+                            </div>
+                        </td>
+
+                        <td v-if="currentStep !== 0" @click="openModal(1)" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
+                            <div :class="`vote-box ${currentVotes.preferentialVote1 ? '' : 'pulsing-box'}`">
+                                <span v-if="currentVotes.preferentialVote1" class="x-mark">{{ currentVotes.preferentialVote1 }}</span>
+                            </div>
+                        </td>
+
+                        <td v-if="currentStep !== 0" @click="openModal(2)" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
+                            <div v-if="[1, 3, 4].includes(currentStep)" :class="`vote-box ${currentVotes.preferentialVote2 ? '' : 'pulsing-box'}`">
+                                <span v-if="currentVotes.preferentialVote2" class="x-mark">{{ currentVotes.preferentialVote2 }}</span>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td colspan="6" :style="{ backgroundColor: currentMode.backgroundColor }">PARTIDO POLÍTICO C</td>
+                        <td colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
+                            <div v-if="currentStep !== 0" class="vote-box"></div>
+                        </td>
+                        <td colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
+                            <div class="vote-box"></div>
+                        </td>
+                        <td colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
+                            <div v-if="currentStep !== 2" class="vote-box"></div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td colspan="6" :style="{ backgroundColor: currentMode.backgroundColor }">PARTIDO POLÍTICO D</td>
+                        <td colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
+                            <div v-if="currentStep !== 0" class="vote-box"></div>
+                        </td>
+                        <td colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
+                            <div class="vote-box"></div>
+                        </td>
+                        <td colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
+                            <div v-if="currentStep !== 2" class="vote-box"></div>
+                        </td>
+                    </tr>
+
+                </tbody>
+            </table>
+
+        </div>
         <div v-if="!showVoteResult" id="message-container">
             <h3>Toma en cuenta:</h3>
             <p>
-                1. Marcar como mínimo el logo del partido (Símbolo).<br>
-                2. Se debe marcar el símbolo antes de ingresar el voto preferencial.<br>
-                3. El voto preferencial es opcional.<br>
-                4. El voto preferencial no puede repetirse.
+                1. JP se encuentra en la posición #16 de la cédula!<br>
+                2. Marcar como mínimo el logo del partido (Símbolo).<br>
+                3. Se debe marcar el símbolo antes de ingresar el voto preferencial.<br>
+                4. El voto preferencial es opcional.<br>
+                5. El voto preferencial no puede repetirse.
             </p>
         </div>
 
@@ -335,13 +410,6 @@ const downloadResults = async () => {
                 <img src="../assets/IMAGEN FINAL.png" alt="Mascota Juntos por el Perú" class="party-mascot" />
                 
                 <button class="share-button" @click="downloadResults">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="18" cy="5" r="3"></circle>
-                        <circle cx="6" cy="12" r="3"></circle>
-                        <circle cx="18" cy="19" r="3"></circle>
-                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-                    </svg>
                     DESCARGAR RESULTADOS
                 </button>
             </div>
@@ -785,5 +853,30 @@ const downloadResults = async () => {
 /* Obligamos a la grilla a tener 2 columnas, sin importar el dispositivo */
 .exporting .results-grid {
     grid-template-columns: repeat(2, 1fr) !important;
+}
+
+/* =========================================
+   ANIMACIÓN DE FILAS A LA #16
+========================================= */
+/* Opcional: Asegurarnos de que las filas de animación no tengan bordes extraños */
+.fake-row td {
+    border-bottom: 0.75rem solid white;
+    height: 60px; /* Forzamos una altura para que el salto sea constante */
+}
+
+.table-window {
+    width: 100%;
+    padding: 0 clamp(15px, 3.5vw, 30px);
+    box-sizing: border-box; /* Fundamental para que no se desborde la página */
+    /* Limita la altura para que solo se vean ~5 filas a la vez */
+    max-height: 550px; 
+    
+    /* MAGIA: Oculta las filas falsas que están por debajo de la ventana */
+    overflow: hidden; 
+    background-color: white;
+    
+    /* Cuando termine la animación y queden solo 3 filas, 
+       la ventana se encogerá suavemente para abrazarlas */
+    transition: max-height 0.4s ease; 
 }
 </style>
