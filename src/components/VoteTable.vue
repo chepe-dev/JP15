@@ -236,8 +236,22 @@ watch(currentStep, () => {
 
 <template>
     <div class="vote-component-wrapper">
+
+        <div v-if="!showVoteResult" class="progress-container">
+            <div class="progress-header">
+                <span class="progress-text">Paso {{ currentStep + 1 }} de {{ tableModes.length }}</span>
+                <span class="progress-mode">{{ currentMode.title }}</span>
+            </div>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" :style="{ width: ((currentStep + 1) / tableModes.length) * 100 + '%' }"></div>
+            </div>
+        </div>
         
         <div v-if="!showVoteResult" class="table-window">
+
+            <div v-if="currentStep === 0 && fakeRows.length > 0" class="animation-overlay">
+                <h2 class="overlay-text">¡JP SE ENCUENTRA EN LA POSICIÓN #16!</h2>
+            </div>
 
             <table id="vote-table">
                 <colgroup>
@@ -671,9 +685,9 @@ watch(currentStep, () => {
    OTROS CONTENEDORES
 ========================================= */
 #message-container {
-    background-color: darkgoldenrod;
+    background-color: lightseagreen;
     color: white;
-    border: 2px solid goldenrod;
+    border: 2px solid lightgreen;
     width: 100%;
     padding: clamp(1rem, 3vw, 1.5rem);
     box-sizing: border-box;
@@ -922,5 +936,106 @@ watch(currentStep, () => {
     /* Cuando termine la animación y queden solo 3 filas, 
        la ventana se encogerá suavemente para abrazarlas */
     transition: max-height 0.4s ease; 
+}
+
+/* =========================================
+   BARRA DE PROGRESO
+========================================= */
+.progress-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 0 0.5rem;
+}
+
+.progress-text {
+    font-weight: bold;
+    color: #333;
+    font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+}
+
+.progress-mode {
+    font-size: clamp(0.7rem, 2vw, 0.9rem);
+    color: #666;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.progress-bar-bg {
+    width: 100%;
+    height: 12px;
+    background-color: #e0e0e0;
+    border-radius: 10px;
+    overflow: hidden;
+    /* Sombra interna para darle profundidad a la barra vacía */
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.2); 
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background-color: #E51C24; /* Rojo de Juntos por el Perú */
+    border-radius: 10px;
+    /* Animación suave para cuando cambia el paso */
+    transition: width 0.4s ease-in-out; 
+    box-shadow: 0 0 8px rgba(229, 28, 36, 0.5); /* Brillo rojo */
+}
+
+/* =========================================
+   OVERLAY ANIMACIÓN POSICIÓN #16
+========================================= */
+/* Aseguramos que la ventana sea el límite del overlay */
+.table-window {
+    position: relative; 
+}
+
+.animation-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* Efecto de cristal esmerilado (desenfoca las filas que bajan de fondo) */
+    backdrop-filter: blur(1px); 
+    /* Z-index altísimo para tapar toda la tabla y los encabezados */
+    z-index: 100; 
+    
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 2rem;
+    box-sizing: border-box;
+}
+
+.overlay-text {
+    font-size: clamp(1.8rem, 6vw, 3rem);
+    font-weight: 900;
+    color: #E51C24; /* Rojo de Juntos por el Perú */
+    line-height: 1.2;
+    margin: 0;
+    
+    /* Un borde blanco fuerte y sombra oscura para que el texto resalte a lo bestia */
+    text-shadow: 
+        2px 2px 0px white, 
+        -2px -2px 0px white, 
+        2px -2px 0px white, 
+        -2px 2px 0px white, 
+        0px 6px 15px rgba(0, 0, 0, 0.4);
+        
+    /* Animación de latido para llamar más la atención */
+    animation: overlayPulse 1s infinite alternate;
+}
+
+@keyframes overlayPulse {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.05); }
 }
 </style>
