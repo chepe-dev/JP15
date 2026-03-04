@@ -17,7 +17,6 @@
       <h1 class="nav-title">CÉDULA DE VOTACIÓN DIGITAL - TUTORIAL</h1>
       <p class="nav-subtitle">¿No sabes cómo votar por JP? Pruébalo aquí</p>
     </div>
-    <img src="./assets/Logo_juntos_por_el_Peru.svg" alt="Logo JP" class="nav-logo" />
   </nav>
 
   <main class="main-container">
@@ -56,7 +55,7 @@
   color: white;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   
   /* Padding dinámico: se achica en celulares y crece en PC */
   padding: 1rem clamp(1rem, 5vw, 2rem); 
@@ -68,6 +67,8 @@
 .nav-content {
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  align-items: center;
   max-width: 80%; /* Evita que el texto empuje al logo en pantallas chicas */
 }
 

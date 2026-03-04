@@ -50,6 +50,25 @@ const downloadResults = async () => {
     }
 };
 
+const genericPartyNames = ["PARTIDO AMANECER NUEVO",
+    "PARTIDO PAZ Y AMOR",
+    "PARTIDO GOTAS DE LLUVIA",
+    "PARTIDO MAGIA Y COLOR",
+    "PARTIDO SONRISA FELIZ",
+    "PARTIDO DEL PUEBLO",
+    "PARTIDO TRABAJO DIGNO",
+    "PARTIDO HOJA VERDE",
+    "PARTIDO AMISTAD",
+    "PARTIDO ARMONÍA",
+    "PARTIDO SOLIDARIDAD",
+    "PARTIDO MEJOR FUTURO",
+    "PARTIDO PENSAR POSITIVO",
+    "PARTIDO FUTURO BRILLANTE",
+    "PARTIDO FAMILIA UNIDA",
+    "PARTIDO FELICIDAD A TODOS",
+    "PARTIDO NUEVA ESPERANZA",
+];
+
     const tableModes = [
     {
         title: 'PRESIDENTE Y VICEPRESIDENTES',
@@ -250,42 +269,45 @@ watch(currentStep, () => {
 
                 <tbody>
 
-                    <tr v-for="i in fakeRows" :key="'fake-' + i" class="fake-row">
-                        <td colspan="6" :style="{ backgroundColor: currentMode.backgroundColor }" :data-row="i">PARTIDO POLÍTICO {{ i }}</td>
+                    <tr v-for="i in fakeRows" :key="'fake-' + i" class="fake-row row-number">
+                        <td :colspan="currentStep === 0 ? 8 : 6" :style="{ backgroundColor: currentMode.backgroundColor }" :data-row="i">{{ genericPartyNames[i - 1] }}</td>
                         <td colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
-                            <div v-if="currentStep !== 0" class="vote-box"></div>
+                            <div class="vote-box" :style="`background-image: url('/GENERICOS/LOGOS/${i}.png');`">
+                            </div>
+                        </td>
+                        <td colspan="2" :style="`{ backgroundColor: ${currentMode.backgroundColor}; }`">
+                            <div class="vote-box" :style="currentStep === 0 ? `background-image: url('/GENERICOS/CARAS/${i}.png');` : ''"> </div>
                         </td>
                         <td colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
-                            <div class="vote-box"></div>
-                        </td>
-                        <td colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
-                            <div v-if="currentStep !== 2" class="vote-box"></div>
+                            <div v-if="[1, 3, 4].includes(currentStep)" class="vote-box"></div>
                         </td>
                     </tr>
 
-                    <tr>
-                        <td colspan="6" :style="{ backgroundColor: currentMode.backgroundColor }">PARTIDO POLÍTICO A</td>
-                        <td class="clickable-cell" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }"> 
-                            <div v-if="currentStep !== 0" class="vote-box"></div>
+                    <tr class="row-number">
+                        <td :colspan="currentStep === 0 ? 8 : 6" :style="{ backgroundColor: currentMode.backgroundColor }" data-row="14">{{genericPartyNames[13]}}</td>
+                        <td colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
+                            <div class="vote-box" style="background-image: url('/GENERICOS/LOGOS/14.png');">
+                            </div>
                         </td>
-                        <td class="clickable-cell" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
-                            <div class="vote-box"></div>
+                        <td colspan="2" :style="`{ backgroundColor: ${currentMode.backgroundColor}; }`">
+                            <div class="vote-box" :style="currentStep === 0 ? `background-image: url('/GENERICOS/CARAS/14.png');` : ''"> </div>
                         </td>
-                        <td class="clickable-cell" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
-                            <div v-if="currentStep !== 2" class="vote-box"></div>
+                        <td colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
+                            <div v-if="[1, 3, 4].includes(currentStep)" class="vote-box"></div>
                         </td>
                     </tr>
 
-                    <tr>
-                        <td colspan="6" :style="{ backgroundColor: currentMode.backgroundColor }">PARTIDO POLÍTICO B</td>
-                        <td class="clickable-cell" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }"> 
-                            <div v-if="currentStep !== 0" class="vote-box"></div>
+                    <tr class="row-number">
+                        <td :colspan="currentStep === 0 ? 8 : 6" :style="{ backgroundColor: currentMode.backgroundColor }" data-row="15">{{genericPartyNames[14]}}</td>
+                        <td colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
+                            <div class="vote-box" style="background-image: url('/GENERICOS/LOGOS/15.png');">
+                            </div>
                         </td>
-                        <td class="clickable-cell" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
-                            <div class="vote-box"></div>
+                        <td colspan="2" :style="`{ backgroundColor: ${currentMode.backgroundColor}; }`">
+                            <div class="vote-box" :style="currentStep === 0 ? `background-image: url('/GENERICOS/CARAS/15.png');` : ''"> </div>
                         </td>
-                        <td class="clickable-cell" colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
-                            <div v-if="currentStep !== 2" class="vote-box"></div>
+                        <td colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
+                            <div v-if="[1, 3, 4].includes(currentStep)" class="vote-box"></div>
                         </td>
                     </tr>
 
@@ -320,29 +342,31 @@ watch(currentStep, () => {
                         </td>
                     </tr>
 
-                    <tr>
-                        <td colspan="6" :style="{ backgroundColor: currentMode.backgroundColor }">PARTIDO POLÍTICO C</td>
+                    <tr class="row-number">
+                        <td :colspan="currentStep === 0 ? 8 : 6" :style="{ backgroundColor: currentMode.backgroundColor }" data-row="17">{{genericPartyNames[15]}}</td>
                         <td colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
-                            <div v-if="currentStep !== 0" class="vote-box"></div>
+                            <div class="vote-box" style="background-image: url('/GENERICOS/LOGOS/17.png');">
+                            </div>
+                        </td>
+                        <td colspan="2" :style="`{ backgroundColor: ${currentMode.backgroundColor}; }`">
+                            <div class="vote-box" :style="currentStep === 0 ? `background-image: url('/GENERICOS/CARAS/17.png');` : ''"> </div>
                         </td>
                         <td colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
-                            <div class="vote-box"></div>
-                        </td>
-                        <td colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
-                            <div v-if="currentStep !== 2" class="vote-box"></div>
+                            <div v-if="[1, 3, 4].includes(currentStep)" class="vote-box"></div>
                         </td>
                     </tr>
 
-                    <tr>
-                        <td colspan="6" :style="{ backgroundColor: currentMode.backgroundColor }">PARTIDO POLÍTICO D</td>
+                    <tr class="row-number">
+                        <td :colspan="currentStep === 0 ? 8 : 6" :style="{ backgroundColor: currentMode.backgroundColor }" data-row="18">{{genericPartyNames[16]}}</td>
                         <td colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
-                            <div v-if="currentStep !== 0" class="vote-box"></div>
+                            <div class="vote-box" style="background-image: url('/GENERICOS/LOGOS/18.png');">
+                            </div>
+                        </td>
+                        <td colspan="2" :style="`{ backgroundColor: ${currentMode.backgroundColor}; }`">
+                            <div class="vote-box" :style="currentStep === 0 ? `background-image: url('/GENERICOS/CARAS/18.png');` : ''"> </div>
                         </td>
                         <td colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
-                            <div class="vote-box"></div>
-                        </td>
-                        <td colspan="2" :style="{ backgroundColor: currentMode.backgroundColor }">
-                            <div v-if="currentStep !== 2" class="vote-box"></div>
+                            <div v-if="[1, 3, 4].includes(currentStep)" class="vote-box"></div>
                         </td>
                     </tr>
 
@@ -371,8 +395,7 @@ watch(currentStep, () => {
                             <h4 style="color: red;">YO VOTARÉ ASÍ POR JUNTOS POR EL PERÚ.</h4>
                         </div>
                         <div class="result-body" style="background-color: #ffffff;">
-                            <span class="party-name" style="color: green;">¡TÚ TAMBIÉN PUEDES HACERLO!</span>
-                            <span class="party-name">INGRESA A: <b>JPvoto.com</b></span>
+                            <span class="link-message" style="color: green;">¡TÚ TAMBIÉN PUEDES HACERLO! INGRESA A: <b>JP-Ancash.com</b></span>
                         </div>
                     </div>
 
@@ -444,7 +467,14 @@ watch(currentStep, () => {
 
 <style scoped>
 
-.party-name b{
+.link-message{
+    display: flex;
+    flex-direction: column;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.link-message b{
     color: blue;
 }
 /* Contenedor principal para restringir el ancho global */
@@ -592,7 +622,7 @@ watch(currentStep, () => {
 ========================================= */
 #main-row td:first-child,
 #main-row td:last-child,
-.fake-row td:first-child{
+.row-number td:first-child{
     position: relative;
 }
 
@@ -602,7 +632,7 @@ watch(currentStep, () => {
     left: clamp(-15px, -3vw, -30px);
     top: 50%;
     transform: translateY(-50%);
-    color: lightcoral;
+    color: red;
     font-size: clamp(0.8rem, 3vw, 1.2rem);
     animation: pulsingLeftElement 0.8s infinite alternate;
 }
@@ -613,15 +643,15 @@ watch(currentStep, () => {
     right: clamp(-15px, -3vw, -30px);
     top: 50%;
     transform: translateY(-50%);
-    color: lightcoral;
+    color: red;
     font-size: clamp(0.8rem, 3vw, 1.2rem);
     animation: pulsingRightElement 0.8s infinite alternate;
 }
 
-.fake-row td:first-child::before{
+.row-number td:first-child::before{
     content: attr(data-row);
     position: absolute;
-    left: clamp(-20px, -3vw, -40px);
+    left: clamp(-15px, -3vw, -30px);
     top: 50%;
     transform: translateY(-50%);
     color: black;
@@ -629,11 +659,11 @@ watch(currentStep, () => {
 }
 
 @keyframes pulsingLeftElement {
-    0% { opacity: 0; transform: translateY(-50%) scale(0.8); }
+    0% { opacity: 0.7; transform: translateY(-50%) scale(0.8); }
     100% { opacity: 1; transform: translateY(-50%) translateX(5px) scale(1.1); }
 }
 @keyframes pulsingRightElement {
-    0% { opacity: 0; transform: translateY(-50%) scale(0.8); }
+    0% { opacity: 0.7; transform: translateY(-50%) scale(0.8); }
     100% { opacity: 1; transform: translateY(-50%) translateX(-5px) scale(1.1); }
 }
 
