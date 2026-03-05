@@ -3,11 +3,16 @@
   import VoteTable from './components/VoteTable.vue';
 
   // Creamos una variable reactiva para controlar qué se ve
-  const mostrarTabla = ref(false);
+  const showTable = ref(false);
 
   // Función para cambiar el estado
   const iniciarVoto = () => {
-    mostrarTabla.value = true;
+    showTable.value = true;
+  };
+
+  // Apagar tabla
+  const restartTable = () => {
+    showTable.value = false;
   };
 </script>
 
@@ -21,7 +26,7 @@
 
   <main class="main-container">
     
-    <div v-if="!mostrarTabla" class="entry">
+    <div v-if="!showTable" class="entry">
       <div class="vote-message">
         <h2>VOTA POR JUNTOS POR EL PERÚ</h2>
         <img src="./assets/Logo_juntos_por_el_Peru.svg" class="main-logo" alt="Logo Juntos por el Perú"/>
@@ -36,7 +41,7 @@
     </div>
 
     <div v-else id="vote-page">
-      <VoteTable />
+      <VoteTable @restart="restartTable"/>
     </div>
 
   </main>

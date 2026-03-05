@@ -175,8 +175,25 @@ const genericPartyNames = ["PARTIDO AMANECER NUEVO",
 
     // Funcionalidad para mostrar resultado del voto
     const showVoteResult = ref(false);
+    const emit = defineEmits(['restart']);
+
+    const btnGoForwardText = computed(() => {
+        
+        if (showVoteResult.value) {
+            return 'REINICIAR';
+        }
+        else if (currentStep.value === tableModes.length - 1) {
+            return 'FINALIZAR';
+        }
+        else return 'SIGUIENTE';
+    });
 
     const goForward = () => {
+        if(showVoteResult.value) {
+            emit('restart');
+            return;
+        }
+
         // Validamos que se hayan marcado las cajas requeridas
         const v = currentVotes.value;
         if (!v.box1) {
@@ -458,7 +475,7 @@ watch(currentStep, () => {
         <div class="button-container">
             <button id="btnBack" class="black-button" @click="goBack" :disabled="currentStep === 0">ATRÁS</button>
             <button id="btnForward" class="black-button" @click="goForward">
-                {{ currentStep === tableModes.length - 1 ? 'FINALIZAR' : 'SIGUIENTE' }}
+                {{ btnGoForwardText }}
             </button>
         </div>
     </div>
