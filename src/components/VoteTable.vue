@@ -284,7 +284,6 @@ watch(currentStep, () => {
                             <h3 v-if="currentMode.subtitle">{{ currentMode.subtitle }}</h3>
                         </th>
                         <th colspan="3">
-                            <img src="../assets/ONPE.png" alt="Logo ONPE" class="header-logo onpe-logo">
                         </th>
                     </tr>
                     <tr id="instruction-row">
