@@ -498,6 +498,10 @@ watch(currentStep, () => {
 
 <style scoped>
 
+#main-row .vote-box{
+    cursor: pointer !important;
+}
+
 .link-message{
     display: flex;
     flex-direction: column;
