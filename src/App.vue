@@ -2,15 +2,12 @@
   import { ref } from 'vue';
   import VoteTable from './components/VoteTable.vue';
 
-  // Creamos una variable reactiva para controlar qué se ve
   const showTable = ref(false);
 
-  // Función para cambiar el estado
-  const iniciarVoto = () => {
+  const beginVote = () => {
     showTable.value = true;
   };
 
-  // Apagar tabla
   const restartTable = () => {
     showTable.value = false;
   };
@@ -32,7 +29,7 @@
         <img src="./assets/Logo_juntos_por_el_Peru.svg" class="main-logo" alt="Logo Juntos por el Perú"/>
       </div>
       
-      <button id="btnBeginVote" @click="iniciarVoto">Iniciar voto</button>
+      <button id="btnBeginVote" @click="beginVote">Iniciar voto</button>
       
       <h3>Simulación para el distrito electoral de Áncash</h3>
 

@@ -14,7 +14,7 @@ const props = defineProps({
   },
   type: {
     type: String,
-    default: 'warning' // Puede ser 'warning' o 'success'
+    default: 'warning'
   }
 });
 

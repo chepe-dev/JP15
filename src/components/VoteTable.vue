@@ -4,7 +4,6 @@ import PreferentialModal from './PreferentialModal.vue';
 import html2canvas from 'html2canvas';
 import CustomAlert from './CustomAlert.vue';
 
-// CONFIGURACIÓN DE LA ALERTA
 const alertConfig = ref({
     show: false,
     title: '',
@@ -12,7 +11,6 @@ const alertConfig = ref({
     type: 'warning'
 });
 
-// Función auxiliar para llamar la alerta fácilmente
 const triggerAlert = (message, title = 'Atención', type = 'warning') => {
     alertConfig.value = { show: true, title, message, type };
 };
@@ -20,13 +18,12 @@ const triggerAlert = (message, title = 'Atención', type = 'warning') => {
 const captureArea = ref(null);
 const isDownloading = ref(false);
 
-// La función que genera y descarga la imagen
 const downloadResults = async () => {
     if (!captureArea.value) return;
 
     try {
-        isDownloading.value = true; // 1. Encendemos el modo exportación
-        await nextTick(); // 2. Esperamos a que el HTML cambie de forma
+        isDownloading.value = true;
+        await nextTick();
 
         const canvas = await html2canvas(captureArea.value, {
             scale: 2,
@@ -46,7 +43,7 @@ const downloadResults = async () => {
     } catch (error) {
         console.error("Error al generar la imagen:", error);
     } finally {
-        isDownloading.value = false; // 3. Devolvemos la vista del celular a la normalidad
+        isDownloading.value = false;
     }
 };
 
@@ -87,8 +84,7 @@ const genericPartyNames = ["PARTIDO AMANECER NUEVO",
         title: 'SENADORES',
         subtitle: 'A NIVEL REGIONAL (ANCASH)',
         backgroundColor: '#F5E6D7',
-        preferentialVotes: [{ name: 'Elías Marcial Varas Meléndez', number: 1, photo: '/SENADORES REGIONALES/1-Elias.png' },
-                            { name: 'Domitila Gina Silva Castillo', number: 2, photo: '/SENADORES REGIONALES/2-Domitila.jpeg' }]
+        preferentialVotes: [{ name: 'Elías Marcial Varas Meléndez', number: 1, photo: '/SENADORES REGIONALES/1-Elias.png' }]
     },
     {
         title: 'DIPUTADOS',
@@ -118,10 +114,8 @@ const genericPartyNames = ["PARTIDO AMANECER NUEVO",
     ];
     const currentStep = ref(0);
 
-    // Computed property para acceder fácilmente a los datos del modo actual
     const currentMode = computed(() => tableModes[currentStep.value]);
 
-    // Funcionalidad del modal
     const showModal = ref(false);
     const activePreferentialBox = ref(null);
     const openModal = (boxNumber) => {
@@ -135,7 +129,6 @@ const genericPartyNames = ["PARTIDO AMANECER NUEVO",
     };
 
     const savePreferentialVote = (candidateNumber) => {
-        // Permitir guardar si el voto es NULO
         if (candidateNumber === null) {
             currentVotes.value[`preferentialVote${activePreferentialBox.value}`] = null;
             showModal.value = false;
@@ -146,34 +139,29 @@ const genericPartyNames = ["PARTIDO AMANECER NUEVO",
         const otherBoxNumber = activePreferentialBox.value === 1 ? 2 : 1;
         const otherBoxKey = `preferentialVote${otherBoxNumber}`;
 
-        // Validación: Evitar que el voto preferencial se repita
-        // Verificamos si la otra caja existe en este modo y si tiene el mismo número
         if (otherBoxKey in v && v[otherBoxKey] === candidateNumber) {
             triggerAlert(`El candidato #${candidateNumber} ya ha sido seleccionado en la otra casilla. Por favor, elija un candidato diferente o deje la casilla en blanco.`);
-            return; // Detenemos la función aquí, el modal no se cierra
+            return;
         }
 
         currentVotes.value[`preferentialVote${activePreferentialBox.value}`] = candidateNumber;
         showModal.value = false;
     };
 
-    // Guardamos los votos de cada etapa en un arreglo
     const votes = ref([
-    { box1: false, box2: false}, // Votos paso 0
-    { box1: false, preferentialVote1: null, preferentialVote2: null}, // Votos paso 1
-    { box1: false, preferentialVote1: null}, // Votos paso 2
-    { box1: false, preferentialVote1: null, preferentialVote2: null}, // Votos paso 3
-    { box1: false, preferentialVote1: null, preferentialVote2: null}  // Votos paso 4
+    { box1: false, box2: false},
+    { box1: false, preferentialVote1: null, preferentialVote2: null},
+    { box1: false, preferentialVote1: null},
+    { box1: false, preferentialVote1: null, preferentialVote2: null},
+    { box1: false, preferentialVote1: null, preferentialVote2: null}
     ]);
 
     const currentVotes = computed(() => votes.value[currentStep.value]);
 
-    // Funciones de los botones
     const alternateVote = (boxNumber) => {
         currentVotes.value[`box${boxNumber}`] = !currentVotes.value[`box${boxNumber}`];
     };
 
-    // Funcionalidad para mostrar resultado del voto
     const showVoteResult = ref(false);
     const emit = defineEmits(['restart']);
 
@@ -194,14 +182,12 @@ const genericPartyNames = ["PARTIDO AMANECER NUEVO",
             return;
         }
 
-        // Validamos que se hayan marcado las cajas requeridas
         const v = currentVotes.value;
         if (!v.box1) {
             triggerAlert(`Por favor, marca el recuadro de Juntos por el Perú antes de avanzar.`);
             return;
         }
 
-        // Si es válido, avanzamos
         if (currentStep.value < tableModes.length - 1) {
             currentStep.value++;
         } else {
@@ -218,34 +204,29 @@ const genericPartyNames = ["PARTIDO AMANECER NUEVO",
         if (currentStep.value > 0) currentStep.value--;
     };
 
-// --- LÓGICA DE LA ANIMACIÓN DE FILAS ---
 const fakeRows = ref([]);
 let rowInterval = null;
 
 const playRowAnimation = () => {
     const delay = currentStep.value === 0 ? 500 : 100;
 
-    // Llenamos el arreglo con los números del 1 al 13: [1, 2, 3... 13]
     fakeRows.value = Array.from({ length: 13 }, (_, i) => i + 1);
     
     if (rowInterval) clearInterval(rowInterval);
     
-    // Cada 80 milisegundos quitamos la fila de MÁS ARRIBA
     rowInterval = setInterval(() => {
         if (fakeRows.value.length > 0) {
-            fakeRows.value.shift(); // shift() borra el primer elemento del arreglo
+            fakeRows.value.shift();
         } else {
             clearInterval(rowInterval);
         }
     }, delay); 
 };
 
-// Reproducir al cargar la tabla por primera vez
 onMounted(() => {
     playRowAnimation();
 });
 
-// Reproducir cada vez que el usuario cambie de paso (siguiente/atrás)
 watch(currentStep, () => {
     playRowAnimation();
 });
